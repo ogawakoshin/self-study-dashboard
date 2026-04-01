@@ -103,6 +103,51 @@
     line-height: 1.4;
   }
 
+  .today-tasks {
+    text-align: left;
+    margin-bottom: 20px;
+  }
+  .today-tasks-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.6;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  .today-task-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .today-task-item:last-child { border-bottom: none; }
+  .today-task-badge {
+    font-size: 0.6rem;
+    padding: 2px 5px;
+    border-radius: 5px;
+    font-weight: 600;
+    white-space: nowrap;
+    min-width: 32px;
+    text-align: center;
+    margin-top: 1px;
+  }
+  .today-task-badge.takken { background: rgba(245,158,11,0.3); color: #fcd34d; }
+  .today-task-badge.ap { background: rgba(139,92,246,0.3); color: #c4b5fd; }
+  .today-task-badge.denki { background: rgba(16,185,129,0.3); color: #6ee7b7; }
+  .today-task-content {
+    flex: 1;
+    font-size: 0.82rem;
+    line-height: 1.35;
+  }
+  .today-task-time {
+    font-size: 0.7rem;
+    opacity: 0.55;
+    white-space: nowrap;
+    margin-top: 1px;
+  }
+
   .exam-countdown {
     background: rgba(255,255,255,0.12);
     border-radius: 12px;
@@ -369,6 +414,8 @@
     <div class="subject-name" id="subjectName"></div>
     <div class="subject-hint" id="subjectHint"></div>
 
+    <div class="today-tasks" id="todayTasks"></div>
+
     <div class="exam-countdown">
       <div class="countdown-label" id="countdownLabel"></div>
       <div class="countdown-value" id="countdownValue"></div>
@@ -559,6 +606,102 @@ function getGreeting() {
   return 'おつかれさまです';
 }
 
+// ===== WEEKLY PLAN (synced with index.html) =====
+const BADGE_LABELS = { takken: '宅建', ap: 'AP', denki: '電工' };
+
+function getTodayTasks() {
+  let currentPhase = 'takken';
+  if (TODAY >= new Date(2026, 10, 15)) currentPhase = 'denki';
+  else if (TODAY >= new Date(2026, 9, 19)) currentPhase = 'ap';
+
+  const dayLabel = DAY_NAMES[DOW];
+
+  const weekPlans = {
+    takken: (() => {
+      const weekNum = Math.ceil(daysBetween(new Date(2026, 2, 26), TODAY) / 7);
+      if (weekNum <= 2) return [
+        { day:'月', subj:'takken', content:'📺 ゆーき大学 宅建業法 動画2本視聴', time:'40min' },
+        { day:'火', subj:'takken', content:'📺 ゆーき大学 宅建業法 動画2本視聴', time:'40min' },
+        { day:'水', subj:'ap', content:'午前問題（テクノロジ系）', time:'1h' },
+        { day:'木', subj:'takken', content:'📺 ゆーき大学 宅建業法 動画2本視聴', time:'40min' },
+        { day:'金', subj:'takken', content:'📺 ゆーき大学 宅建業法 動画2本視聴', time:'40min' },
+        { day:'土', subj:'takken', content:'📺 ゆーき大学 動画の復習・メモ整理', time:'1h' },
+        { day:'日', subj:'ap', content:'午前問題演習', time:'1h' },
+      ];
+      if (weekNum <= 4) return [
+        { day:'月', subj:'takken', content:'📺 ゆーき大学 法令上の制限 動画2本', time:'40min' },
+        { day:'火', subj:'takken', content:'📺 ゆーき大学 法令上の制限 動画2本', time:'40min' },
+        { day:'水', subj:'ap', content:'午前問題（テクノロジ系）', time:'1h' },
+        { day:'木', subj:'takken', content:'📺 ゆーき大学 税その他の動画', time:'40min' },
+        { day:'金', subj:'takken', content:'📺 法令制限・税 残りの動画', time:'40min' },
+        { day:'土', subj:'takken', content:'📺 動画復習 + メモ整理', time:'1h' },
+        { day:'日', subj:'ap', content:'午前問題演習', time:'1h' },
+      ];
+      if (weekNum <= 6) return [
+        { day:'月', subj:'takken', content:'📺 ゆーき大学 民法 動画2本', time:'50min' },
+        { day:'火', subj:'takken', content:'📺 ゆーき大学 民法 動画2本', time:'50min' },
+        { day:'水', subj:'ap', content:'午前問題（テクノロジ系）', time:'1h' },
+        { day:'木', subj:'takken', content:'📺 ゆーき大学 民法 動画1-2本', time:'40min' },
+        { day:'金', subj:'takken', content:'📺 民法 残り + トリセツ問題集購入', time:'1h' },
+        { day:'土', subj:'takken', content:'📺 1周目完了！ 全体の復習・ノート整理', time:'1.5h' },
+        { day:'日', subj:'ap', content:'午前問題演習', time:'1h' },
+      ];
+      if (weekNum <= 8) return [
+        { day:'月', subj:'takken', content:'📺 2周目:宅建業法(1.5倍速) + 📖 問題集音読', time:'1h' },
+        { day:'火', subj:'takken', content:'📖 トリセツ問題集「宅建業法」音読', time:'1h' },
+        { day:'水', subj:'ap', content:'午前問題（テクノロジ系）', time:'1h' },
+        { day:'木', subj:'takken', content:'📺 2周目:法令制限(1.5倍速) + 📖 問題集', time:'1h' },
+        { day:'金', subj:'takken', content:'📖 トリセツ問題集「法令制限」音読', time:'1.5h' },
+        { day:'土', subj:'takken', content:'📺 2周目:税+民法(1.5倍速) + 📖 問題集', time:'1.5h' },
+        { day:'日', subj:'ap', content:'午前問題演習', time:'1h' },
+      ];
+      if (weekNum <= 14) return [
+        { day:'月', subj:'takken', content:'📖 トリセツ問題集 音読（宅建業法セクション）', time:'1h' },
+        { day:'火', subj:'takken', content:'📖 トリセツ問題集 音読（法令制限セクション）', time:'1h' },
+        { day:'水', subj:'ap', content:'午前問題（マネジメント系）', time:'1h' },
+        { day:'木', subj:'takken', content:'📖 問題集 音読（税その他→権利関係）', time:'1h' },
+        { day:'金', subj:'takken', content:'📺 棚田行政書士 借地借家法等 + 復習', time:'1.5h' },
+        { day:'土', subj:'takken', content:'📖 問題集2周目 + 弱点分野の動画視聴', time:'1.5h' },
+        { day:'日', subj:'ap', content:'午前・午後問題演習', time:'1h' },
+      ];
+      return [
+        { day:'月', subj:'takken', content:'朝: 権利関係(頭フレッシュな時に暗記)', time:'1.5h' },
+        { day:'火', subj:'takken', content:'昼: 法令制限・税 / 夜: 宅建業法 暗記', time:'1.5h' },
+        { day:'水', subj:'ap', content:'午後問題演習', time:'1h' },
+        { day:'木', subj:'takken', content:'全科目並行: 問題集3周目 + 暗記ノート', time:'1.5h' },
+        { day:'金', subj:'takken', content:'過去問演習 + 弱点分野の集中復習', time:'1.5h' },
+        { day:'土', subj:'takken', content:'📺 ゆーき大学/棚田 動画で復習 + 暗記', time:'2h' },
+        { day:'日', subj:'ap', content:'午前・午後問題演習', time:'1h' },
+      ];
+    })(),
+    ap: [
+      { day:'月', subj:'ap', content:'午前問題演習', time:'2h' },
+      { day:'火', subj:'ap', content:'午後問題（選択分野1）', time:'2h' },
+      { day:'水', subj:'denki', content:'筆記対策・過去問', time:'1h' },
+      { day:'木', subj:'ap', content:'午後問題（選択分野2）', time:'2h' },
+      { day:'金', subj:'ap', content:'午前問題の復習', time:'1.5h' },
+      { day:'土', subj:'ap', content:'模試・弱点分析', time:'2h' },
+      { day:'日', subj:'denki', content:'筆記CBT対策', time:'1h' },
+    ],
+    denki: [
+      { day:'月', subj:'denki', content:'候補問題の練習（問題1-3）', time:'2h' },
+      { day:'火', subj:'denki', content:'候補問題の練習（問題4-6）', time:'2h' },
+      { day:'水', subj:'denki', content:'複線図の描き方・確認', time:'1.5h' },
+      { day:'木', subj:'denki', content:'候補問題の練習（問題7-9）', time:'2h' },
+      { day:'金', subj:'denki', content:'候補問題の練習（問題10-13）', time:'2h' },
+      { day:'土', subj:'denki', content:'タイムトライアル・弱点復習', time:'2h' },
+      { day:'日', subj:'denki', content:'全体通し練習・工具確認', time:'1.5h' },
+    ],
+  };
+
+  let currentPhase = 'takken';
+  if (TODAY >= new Date(2026, 10, 15)) currentPhase = 'denki';
+  else if (TODAY >= new Date(2026, 9, 19)) currentPhase = 'ap';
+
+  const plan = weekPlans[currentPhase] || [];
+  return plan.filter(t => t.day === dayLabel);
+}
+
 // ===== RENDER =====
 let selectedMinutes = 30;
 let currentSubject = SCHEDULE[DOW] || 'takken';
@@ -595,6 +738,19 @@ function render() {
   document.getElementById('subjectIcon').textContent = subj.icon;
   document.getElementById('subjectName').textContent = subj.name;
   document.getElementById('subjectHint').textContent = subj.hint;
+
+  // Today's tasks
+  const tasks = getTodayTasks();
+  const tasksEl = document.getElementById('todayTasks');
+  if (tasks.length > 0) {
+    tasksEl.innerHTML = '<div class="today-tasks-label">TODAY\'S TASKS</div>' +
+      tasks.map(t => `
+        <div class="today-task-item">
+          <span class="today-task-badge ${t.subj}">${BADGE_LABELS[t.subj] || t.subj}</span>
+          <span class="today-task-content">${t.content}</span>
+          <span class="today-task-time">${t.time}</span>
+        </div>`).join('');
+  }
 
   // Exam countdown
   const exam = EXAM_DATES[currentSubject];

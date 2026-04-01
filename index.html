@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>自己学習スケジュール管理 2026</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-light: #dbeafe;
+    --takken: #f59e0b;
+    --takken-light: #fef3c7;
+    --takken-dark: #b45309;
+    --ap: #8b5cf6;
+    --ap-light: #ede9fe;
+    --ap-dark: #6d28d9;
+    --denki: #10b981;
+    --denki-light: #d1fae5;
+    --denki-dark: #047857;
+    --danger: #ef4444;
+    --danger-light: #fee2e2;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+    --shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
+    --shadow-lg: 0 10px 15px rgba(0,0,0,.1), 0 4px 6px rgba(0,0,0,.05);
+    --radius: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+    background: var(--gray-50);
+    color: var(--gray-800);
+    line-height: 1.6;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 50%, #7c3aed 100%);
+    color: white;
+    padding: 32px 24px 24px;
+    text-align: center;
+  }
+  .header h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 4px; }
+  .header p { opacity: .85; font-size: .95rem; }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  /* Alert banner */
+  .alert-banner {
+    background: var(--danger-light);
+    border: 2px solid var(--danger);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: pulse-border 2s infinite;
+  }
+  @keyframes pulse-border {
+    0%, 100% { border-color: var(--danger); }
+    50% { border-color: #fca5a5; }
+  }
+  .alert-banner .alert-icon { font-size: 1.5rem; }
+  .alert-banner .alert-text { font-weight: 600; color: var(--danger); }
+  .alert-banner .alert-sub { color: var(--gray-600); font-size: .9rem; }
+
+  /* Stats row */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    text-align: center;
+  }
+  .stat-card .stat-label { font-size: .85rem; color: var(--gray-500); margin-bottom: 4px; }
+  .stat-card .stat-value { font-size: 2rem; font-weight: 700; }
+  .stat-card .stat-unit { font-size: .9rem; color: var(--gray-500); }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    background: var(--gray-100);
+    border-radius: var(--radius);
+    padding: 4px;
+    overflow-x: auto;
+  }
+  .tab-btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 10px 16px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    font-size: .9rem;
+    font-weight: 500;
+    color: var(--gray-500);
+    cursor: pointer;
+    transition: all .2s;
+    white-space: nowrap;
+  }
+  .tab-btn.active { background: white; color: var(--gray-800); box-shadow: var(--shadow); }
+  .tab-btn:hover:not(.active) { color: var(--gray-700); }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* Cards */
+  .card {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 16px 20px;
+    font-weight: 600;
+    font-size: 1.05rem;
+    border-bottom: 1px solid var(--gray-100);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-body { padding: 20px; }
+
+  /* Certification cards */
+  .cert-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; margin-bottom: 24px; }
+  .cert-card {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .cert-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+  .cert-card-top { padding: 20px; color: white; }
+  .cert-card-top.takken { background: linear-gradient(135deg, var(--takken), #d97706); }
+  .cert-card-top.ap { background: linear-gradient(135deg, var(--ap), #7c3aed); }
+  .cert-card-top.denki { background: linear-gradient(135deg, var(--denki), #059669); }
+  .cert-card-top h3 { font-size: 1.15rem; margin-bottom: 4px; }
+  .cert-card-top .exam-date { opacity: .9; font-size: .9rem; }
+  .cert-card-body { padding: 20px; }
+  .cert-meta { display: flex; justify-content: space-between; margin-bottom: 12px; }
+  .cert-meta-item { text-align: center; }
+  .cert-meta-item .label { font-size: .75rem; color: var(--gray-400); text-transform: uppercase; }
+  .cert-meta-item .value { font-size: 1.1rem; font-weight: 700; }
+  .countdown-bar { height: 6px; background: var(--gray-200); border-radius: 3px; overflow: hidden; }
+  .countdown-fill { height: 100%; border-radius: 3px; transition: width .5s; }
+
+  /* Timeline */
+  .timeline { position: relative; padding-left: 32px; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 11px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: var(--gray-200);
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 24px;
+  }
+  .timeline-dot {
+    position: absolute;
+    left: -32px;
+    top: 4px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: var(--shadow);
+  }
+  .timeline-dot.takken { background: var(--takken); }
+  .timeline-dot.ap { background: var(--ap); }
+  .timeline-dot.denki { background: var(--denki); }
+  .timeline-dot.milestone { background: var(--danger); }
+  .timeline-content {
+    background: white;
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    box-shadow: var(--shadow);
+  }
+  .timeline-date { font-size: .8rem; color: var(--gray-400); margin-bottom: 4px; }
+  .timeline-title { font-weight: 600; margin-bottom: 4px; }
+  .timeline-desc { font-size: .9rem; color: var(--gray-600); }
+  .timeline-tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: .75rem;
+    font-weight: 600;
+    margin-top: 8px;
+  }
+  .tag-takken { background: var(--takken-light); color: var(--takken-dark); }
+  .tag-ap { background: var(--ap-light); color: var(--ap-dark); }
+  .tag-denki { background: var(--denki-light); color: var(--denki-dark); }
+  .tag-deadline { background: var(--danger-light); color: var(--danger); }
+
+  /* Phase schedule */
+  .phase-section { margin-bottom: 28px; }
+  .phase-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--gray-200);
+  }
+  .phase-badge {
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: .8rem;
+    font-weight: 700;
+    color: white;
+  }
+  .phase-title { font-size: 1.1rem; font-weight: 600; }
+  .phase-dates { font-size: .85rem; color: var(--gray-500); }
+
+  /* Weekly plan table */
+  .week-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  .week-table th {
+    background: var(--gray-50);
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: .8rem;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    border-bottom: 2px solid var(--gray-200);
+  }
+  .week-table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--gray-100);
+    vertical-align: top;
+  }
+  .week-table tr:hover { background: var(--gray-50); }
+  .subject-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: .8rem;
+    font-weight: 600;
+    margin-right: 4px;
+  }
+  .subject-badge.denki { background: var(--denki-light); color: var(--denki-dark); }
+  .subject-badge.takken { background: var(--takken-light); color: var(--takken-dark); }
+  .subject-badge.ap { background: var(--ap-light); color: var(--ap-dark); }
+
+  /* Progress tracker */
+  .progress-section { margin-bottom: 20px; }
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .progress-label { font-weight: 600; font-size: .95rem; }
+  .progress-pct { font-size: .9rem; color: var(--gray-500); }
+  .progress-bar { height: 10px; background: var(--gray-200); border-radius: 5px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 5px; transition: width .5s; }
+
+  /* Checklist */
+  .checklist { list-style: none; }
+  .checklist li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--gray-100);
+    cursor: pointer;
+    user-select: none;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .check-box {
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--gray-300);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all .2s;
+  }
+  .check-box.checked {
+    background: var(--primary);
+    border-color: var(--primary);
+  }
+  .check-box.checked::after {
+    content: '\2713';
+    color: white;
+    font-size: .8rem;
+    font-weight: 700;
+  }
+  .check-text { font-size: .95rem; }
+  .check-text.done { text-decoration: line-through; color: var(--gray-400); }
+
+  /* Gantt-like chart */
+  .gantt-container { overflow-x: auto; }
+  .gantt-chart { min-width: 900px; }
+  .gantt-months {
+    display: grid;
+    grid-template-columns: 140px repeat(10, 1fr);
+    gap: 0;
+    margin-bottom: 4px;
+  }
+  .gantt-month-label {
+    text-align: center;
+    font-size: .75rem;
+    color: var(--gray-500);
+    font-weight: 600;
+    padding: 8px 4px;
+    border-bottom: 2px solid var(--gray-200);
+  }
+  .gantt-row {
+    display: grid;
+    grid-template-columns: 140px repeat(10, 1fr);
+    gap: 0;
+    margin-bottom: 2px;
+    min-height: 40px;
+    align-items: center;
+  }
+  .gantt-label {
+    font-size: .85rem;
+    font-weight: 600;
+    padding: 8px 12px;
+    white-space: nowrap;
+  }
+  .gantt-cell { position: relative; height: 32px; }
+  .gantt-bar {
+    position: absolute;
+    top: 4px;
+    height: 24px;
+    border-radius: 12px;
+    opacity: .85;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .7rem;
+    font-weight: 600;
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 8px;
+  }
+  .gantt-marker {
+    position: absolute;
+    top: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--danger);
+    border-radius: 2px;
+    z-index: 2;
+  }
+  .gantt-marker-label {
+    position: absolute;
+    top: -18px;
+    font-size: .6rem;
+    color: var(--danger);
+    font-weight: 700;
+    white-space: nowrap;
+    transform: translateX(-50%);
+  }
+
+  /* Today indicator */
+  .today-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--danger);
+    z-index: 10;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,.5);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: white;
+    border-radius: var(--radius);
+    max-width: 500px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 24px;
+  }
+  .modal h3 { margin-bottom: 16px; }
+  .modal-close {
+    float: right;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--gray-400);
+  }
+
+  /* Study log */
+  .log-entry {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--gray-100);
+    align-items: center;
+  }
+  .log-date-badge {
+    min-width: 50px;
+    text-align: center;
+    padding: 6px 8px;
+    border-radius: 8px;
+    background: var(--gray-100);
+    font-size: .8rem;
+    font-weight: 600;
+  }
+  .log-details { flex: 1; }
+  .log-hours { font-weight: 700; color: var(--primary); }
+
+  /* Button */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: .9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-sm { padding: 6px 14px; font-size: .85rem; }
+  .btn-outline {
+    background: white;
+    color: var(--gray-700);
+    border: 1px solid var(--gray-300);
+  }
+  .btn-outline:hover { background: var(--gray-50); }
+
+  /* Form inputs */
+  .form-group { margin-bottom: 16px; }
+  .form-label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: 6px; color: var(--gray-600); }
+  .form-input, .form-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--gray-300);
+    border-radius: 8px;
+    font-size: .95rem;
+    font-family: inherit;
+  }
+  .form-input:focus, .form-select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .cert-grid { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .gantt-chart { min-width: 700px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>自己学習スケジュール管理 2026</h1>
+  <p>宅建士 / 応用情報技術者 / 第二種電気工事士 — 年内3資格取得プラン</p>
+</div>
+
+<div class="container">
+
+  <!-- Alert -->
+  <div class="alert-banner" id="alertBanner">
+    <span class="alert-icon">&#9888;</span>
+    <div>
+      <div class="alert-text" id="alertText"></div>
+      <div class="alert-sub" id="alertSub"></div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row" id="statsRow"></div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="overview">概要</button>
+    <button class="tab-btn" data-tab="schedule">学習計画</button>
+    <button class="tab-btn" data-tab="weekly">週間プラン</button>
+    <button class="tab-btn" data-tab="progress">進捗管理</button>
+    <button class="tab-btn" data-tab="log">学習記録</button>
+  </div>
+
+  <!-- Tab: Overview -->
+  <div class="tab-content active" id="tab-overview">
+    <div class="cert-grid" id="certGrid"></div>
+
+    <div class="card">
+      <div class="card-header">&#128197; 年間ガントチャート</div>
+      <div class="card-body">
+        <div class="gantt-container">
+          <div class="gantt-chart" id="ganttChart"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">&#128205; 重要マイルストーン</div>
+      <div class="card-body">
+        <div class="timeline" id="milestoneTimeline"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header" style="color:var(--takken)">&#128218; 宅建士 学習メソッド（参考記事ベース）</div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">
+          <div style="background:var(--takken-light);border-radius:10px;padding:16px">
+            <div style="font-weight:700;color:var(--takken-dark);margin-bottom:8px">1. 動画で全体像をつかむ</div>
+            <div style="font-size:.9rem;color:var(--gray-600);line-height:1.7">
+              <strong>ゆーき大学</strong>（YouTube）の再生リストを2周以上視聴。テキスト通読より動画が圧倒的に効率的。無料動画だけで十分。
+            </div>
+          </div>
+          <div style="background:var(--takken-light);border-radius:10px;padding:16px">
+            <div style="font-weight:700;color:var(--takken-dark);margin-bottom:8px">2. 問題集を音読で周回</div>
+            <div style="font-size:.9rem;color:var(--gray-600);line-height:1.7">
+              <strong>トリセツ分野別過去問題集</strong>を使用。選択肢→解説を全て音読。暗記は2周目以降でOK。年度別ではなく分野別を選ぶこと。
+            </div>
+          </div>
+          <div style="background:var(--takken-light);border-radius:10px;padding:16px">
+            <div style="font-weight:700;color:var(--takken-dark);margin-bottom:8px">3. 優先順位を守る</div>
+            <div style="font-size:.9rem;color:var(--gray-600);line-height:1.7">
+              <strong>宅建業法 &gt; 法令制限 &gt; 税その他 &gt; 権利関係</strong>の順。権利関係（民法）は難しすぎるので最後に回す。宅建業法は20問出題で最重要。
+            </div>
+          </div>
+          <div style="background:var(--takken-light);border-radius:10px;padding:16px">
+            <div style="font-weight:700;color:var(--takken-dark);margin-bottom:8px">4. 範囲より深さ</div>
+            <div style="font-size:.9rem;color:var(--gray-600);line-height:1.7">
+              細かい知識を追わず<strong>基本エリアの習熟度を深める</strong>。基礎で30〜35点 + 勘で3〜8点が合格パターン。基礎理解が深まると勘も当たる。
+            </div>
+          </div>
+          <div style="background:var(--takken-light);border-radius:10px;padding:16px">
+            <div style="font-weight:700;color:var(--takken-dark);margin-bottom:8px">5. 7月申込後 → 暗記モード</div>
+            <div style="font-size:.9rem;color:var(--gray-600);line-height:1.7">
+              全科目を<strong>同時並行</strong>で学習。朝:権利関係 / 昼:法令制限・税 / 夜:宅建業法暗記。深める動画は<strong>棚田行政書士の不動産大学</strong>。
+            </div>
+          </div>
+          <div style="background:var(--takken-light);border-radius:10px;padding:16px">
+            <div style="font-weight:700;color:var(--takken-dark);margin-bottom:8px">6. 直前期に予想模試</div>
+            <div style="font-size:.9rem;color:var(--gray-600);line-height:1.7">
+              1ヶ月前に<strong>TAC直前予想模試</strong>を購入。難易度高めなので心折れないこと。試験1週間前は2時間制限で本番形式で解く。
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:12px;padding:12px 16px;background:var(--gray-50);border-radius:8px;font-size:.85rem;color:var(--gray-500)">
+          出典: <a href="https://note.com/iamawriter/n/n0282c287ddca" target="_blank" style="color:var(--primary)">宅建の合格にテキストは不要【正しい勉強法】｜chaco</a>（2024年度 43点合格・約200時間）
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab: Schedule -->
+  <div class="tab-content" id="tab-schedule">
+    <div id="phaseSchedule"></div>
+  </div>
+
+  <!-- Tab: Weekly Plan -->
+  <div class="tab-content" id="tab-weekly">
+    <div class="card">
+      <div class="card-header">
+        &#128197; 今週の学習プラン
+        <span style="margin-left:auto;font-size:.85rem;color:var(--gray-500)" id="currentWeekRange"></span>
+      </div>
+      <div class="card-body">
+        <table class="week-table" id="weekTable">
+          <thead><tr><th>曜日</th><th>科目</th><th>学習内容</th><th>時間</th></tr></thead>
+          <tbody id="weekTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header" style="color:var(--takken)">&#127909; ゆーき大学 動画視聴スケジュール（1周目）</div>
+      <div class="card-body" style="padding:0">
+        <table class="week-table" id="videoScheduleTable">
+          <thead><tr><th>週</th><th>期間</th><th>分野</th><th>視聴動画</th><th>本数</th><th>合計</th></tr></thead>
+          <tbody id="videoScheduleBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header" style="color:var(--takken)">&#9989; 動画視聴チェックリスト</div>
+      <div class="card-body">
+        <div style="margin-bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <select class="form-select" id="videoFilter" style="max-width:200px">
+            <option value="all">すべて表示</option>
+            <option value="takkengyoho">宅建業法</option>
+            <option value="hourei">法令上の制限</option>
+            <option value="zei">税その他</option>
+            <option value="minpo">民法</option>
+          </select>
+          <span id="videoProgressText" style="font-size:.85rem;color:var(--gray-500)"></span>
+        </div>
+        <div id="videoProgressBar" style="height:8px;background:var(--gray-200);border-radius:4px;overflow:hidden;margin-bottom:16px">
+          <div id="videoProgressFill" style="height:100%;background:var(--takken);border-radius:4px;transition:width .3s"></div>
+        </div>
+        <ul class="checklist" id="videoChecklist"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab: Progress -->
+  <div class="tab-content" id="tab-progress">
+    <div class="card">
+      <div class="card-header">&#128200; 全体進捗</div>
+      <div class="card-body" id="progressBars"></div>
+    </div>
+    <div class="card">
+      <div class="card-header">&#9989; 学習チェックリスト</div>
+      <div class="card-body">
+        <div style="margin-bottom:16px">
+          <select class="form-select" id="checklistFilter" style="max-width:250px">
+            <option value="all">すべて表示</option>
+            <option value="denki">電気工事士</option>
+            <option value="takken">宅建士</option>
+            <option value="ap">応用情報技術者</option>
+          </select>
+        </div>
+        <ul class="checklist" id="checklist"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab: Log -->
+  <div class="tab-content" id="tab-log">
+    <div class="card">
+      <div class="card-header">
+        &#128221; 学習記録
+        <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="openLogModal()">+ 記録する</button>
+      </div>
+      <div class="card-body">
+        <div id="logSummary" style="margin-bottom:20px"></div>
+        <div id="logEntries"><p style="color:var(--gray-400);text-align:center;padding:40px 0">まだ記録がありません。「+ 記録する」ボタンから学習を記録しましょう。</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Log Modal -->
+<div class="modal-overlay" id="logModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeLogModal()">&times;</button>
+    <h3>学習を記録する</h3>
+    <div class="form-group">
+      <label class="form-label">日付</label>
+      <input type="date" class="form-input" id="logDate">
+    </div>
+    <div class="form-group">
+      <label class="form-label">科目</label>
+      <select class="form-select" id="logSubject">
+        <option value="denki">第二種電気工事士</option>
+        <option value="takken">宅建士</option>
+        <option value="ap">応用情報技術者</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">学習時間（分）</label>
+      <input type="number" class="form-input" id="logMinutes" min="5" step="5" value="60">
+    </div>
+    <div class="form-group">
+      <label class="form-label">学習内容（メモ）</label>
+      <input type="text" class="form-input" id="logMemo" placeholder="例: テキスト第3章 電気回路を読了">
+    </div>
+    <button class="btn btn-primary" onclick="saveLog()" style="width:100%">保存する</button>
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+const TODAY = new Date();
+const YEAR = 2026;
+
+const CERTS = {
+  denki: {
+    name: '第二種電気工事士',
+    shortName: '電気工事士',
+    color: '#10b981',
+    colorLight: '#d1fae5',
+    colorDark: '#047857',
+    examDates: [
+      { label: '下期申込開始', date: new Date(2026, 7, 17), type: 'deadline' },
+      { label: '下期申込締切', date: new Date(2026, 8, 3), type: 'deadline' },
+      { label: '下期筆記(CBT)', date: new Date(2026, 9, 15), type: 'exam' },
+      { label: '下期技能試験', date: new Date(2026, 11, 12), type: 'exam' },
+    ],
+    mainExamDate: new Date(2026, 11, 12),
+    studyHours: 200,
+    phases: [
+      { start: new Date(2026, 7, 17), end: new Date(2026, 9, 31), label: '筆記対策' },
+      { start: new Date(2026, 10, 1), end: new Date(2026, 11, 11), label: '技能対策' },
+    ]
+  },
+  takken: {
+    name: '宅地建物取引士',
+    shortName: '宅建士',
+    color: '#f59e0b',
+    colorLight: '#fef3c7',
+    colorDark: '#b45309',
+    examDates: [
+      { label: '申込開始', date: new Date(2026, 6, 1), type: 'deadline' },
+      { label: '申込締切', date: new Date(2026, 6, 31), type: 'deadline' },
+      { label: '本試験', date: new Date(2026, 9, 18), type: 'exam' },
+    ],
+    mainExamDate: new Date(2026, 9, 18),
+    studyHours: 200,
+    phases: [
+      { start: new Date(2026, 2, 26), end: new Date(2026, 4, 31), label: '動画で全体像' },
+      { start: new Date(2026, 3, 15), end: new Date(2026, 5, 30), label: '問題集音読' },
+      { start: new Date(2026, 6, 1), end: new Date(2026, 8, 15), label: '暗記本気モード' },
+      { start: new Date(2026, 8, 16), end: new Date(2026, 9, 17), label: '模試+直前対策' },
+    ]
+  },
+  ap: {
+    name: '応用情報技術者',
+    shortName: '応用情報',
+    color: '#8b5cf6',
+    colorLight: '#ede9fe',
+    colorDark: '#6d28d9',
+    examDates: [
+      { label: 'CBT試験期間(予定)', date: new Date(2026, 10, 1), type: 'exam' },
+    ],
+    mainExamDate: new Date(2026, 10, 15),
+    studyHours: 350,
+    phases: [
+      { start: new Date(2026, 3, 1), end: new Date(2026, 6, 30), label: '午前対策(並行)' },
+      { start: new Date(2026, 7, 1), end: new Date(2026, 9, 17), label: '午後対策(並行)' },
+      { start: new Date(2026, 9, 19), end: new Date(2026, 10, 14), label: '集中対策' },
+    ]
+  }
+};
+
+const MILESTONES = [
+  { date: new Date(2026, 6, 1), title: '宅建士 申込開始', desc: 'Web申込を早めに完了', tag: 'takken', tagLabel: '宅建士', urgent: true },
+  { date: new Date(2026, 7, 17), title: '電気工事士 下期申込開始', desc: '8/17〜9/3の間にオンライン申込', tag: 'denki', tagLabel: '電気工事士', urgent: true },
+  { date: new Date(2026, 8, 3), title: '電気工事士 下期申込締切', desc: '申込を忘れずに！', tag: 'denki', tagLabel: '電気工事士', urgent: true },
+  { date: new Date(2026, 8, 24), title: '電気工事士 CBT筆記開始', desc: '9/24〜11/8の間に受験', tag: 'denki', tagLabel: '電気工事士' },
+  { date: new Date(2026, 9, 18), title: '宅建士 本試験', desc: '権利関係・法令を最終確認', tag: 'takken', tagLabel: '宅建士', urgent: true },
+  { date: new Date(2026, 10, 1), title: '応用情報 CBT試験開始(予定)', desc: 'CBT化初年度、余裕を持って受験', tag: 'ap', tagLabel: '応用情報', urgent: true },
+  { date: new Date(2026, 11, 12), title: '電気工事士 技能試験', desc: '候補問題の練習を完璧に仕上げる', tag: 'denki', tagLabel: '電気工事士', urgent: true },
+];
+
+const CHECKLIST_ITEMS = [
+  { id: 'dk1', cert: 'denki', text: '下期試験の申込を完了する（8/17〜9/3）' },
+  { id: 'dk2', cert: 'denki', text: 'テキスト（筆記）を1周読む' },
+  { id: 'dk3', cert: 'denki', text: '過去問5年分を解く' },
+  { id: 'dk4', cert: 'denki', text: 'CBT筆記試験を受験する（9/24〜11/8）' },
+  { id: 'dk5', cert: 'denki', text: '候補問題13問を全て練習する' },
+  { id: 'dk6', cert: 'denki', text: '技能試験を受験する（12/12-13）' },
+  // --- 宅建: 動画で全体像をつかむ ---
+  { id: 'tk01', cert: 'takken', text: 'ゆーき大学の再生リスト(宅建業法/権利関係/法令制限/税その他)をブックマーク' },
+  { id: 'tk02', cert: 'takken', text: 'ゆーき大学 動画1周目を完了する' },
+  { id: 'tk03', cert: 'takken', text: 'ゆーき大学 動画2周目を完了する' },
+  // --- 宅建: 問題集を音読（宅建業法→法令制限→税その他→権利関係の順） ---
+  { id: 'tk04', cert: 'takken', text: 'トリセツ分野別過去問題集を購入する' },
+  { id: 'tk05', cert: 'takken', text: '問題集「宅建業法」を音読で1周する' },
+  { id: 'tk06', cert: 'takken', text: '問題集「法令上の制限」を音読で1周する' },
+  { id: 'tk07', cert: 'takken', text: '問題集「税その他」を音読で1周する' },
+  { id: 'tk08', cert: 'takken', text: '問題集「権利関係」を音読で1周する' },
+  { id: 'tk09', cert: 'takken', text: '棚田行政書士の不動産大学で理解を深める(借地借家法等)' },
+  { id: 'tk10', cert: 'takken', text: '問題集2周目（暗記を意識しながら）' },
+  // --- 宅建: 7月〜 暗記本気モード ---
+  { id: 'tk11', cert: 'takken', text: '試験申込を完了する（7月・早めに！）' },
+  { id: 'tk12', cert: 'takken', text: '暗記モード: 全科目を同時並行で学習開始' },
+  { id: 'tk13', cert: 'takken', text: '問題集3周目を完了する' },
+  { id: 'tk14', cert: 'takken', text: 'ゆーき大学 動画3周目以上（並行視聴）' },
+  // --- 宅建: 直前期 ---
+  { id: 'tk15', cert: 'takken', text: 'TAC直前予想模試を購入する（9月中旬）' },
+  { id: 'tk16', cert: 'takken', text: '予想模試を解く（難易度高いので心折れない）' },
+  { id: 'tk17', cert: 'takken', text: '試験1週間前: 2時間制限で本番形式模試を実施' },
+  { id: 'tk18', cert: 'takken', text: '10/18 本試験を受験する' },
+  { id: 'ap1', cert: 'ap', text: '午前問題テキストを1周読む' },
+  { id: 'ap2', cert: 'ap', text: '午前過去問を5回分解く' },
+  { id: 'ap3', cert: 'ap', text: '午後問題の選択分野を決める' },
+  { id: 'ap4', cert: 'ap', text: '午後問題の演習を10回分' },
+  { id: 'ap5', cert: 'ap', text: 'CBT試験を受験する' },
+];
+
+// ===== YUUKI DAIGAKU VIDEO DATA =====
+const VIDEOS = [
+  // 宅建業法 (16本, ~240min)
+  { id:'v01', cat:'takkengyoho', label:'宅建業法', title:'#0 合格者は何点とってる？宅建の入門講義', min:8, url:'https://www.youtube.com/playlist?list=PLthNnJTp6AOdCxtlP7ZvK7Ux0RwgBCRl2' },
+  { id:'v02', cat:'takkengyoho', label:'宅建業法', title:'#1 宅地建物取引業とは？', min:17 },
+  { id:'v03', cat:'takkengyoho', label:'宅建業法', title:'#2 免許の登録や免許換え', min:20 },
+  { id:'v04', cat:'takkengyoho', label:'宅建業法', title:'#3 免許の欠格要件', min:26 },
+  { id:'v05', cat:'takkengyoho', label:'宅建業法', title:'#4 宅地建物取引士の登録事項', min:13 },
+  { id:'v06', cat:'takkengyoho', label:'宅建業法', title:'#5 事務所と案内所の違い', min:14 },
+  { id:'v07', cat:'takkengyoho', label:'宅建業法', title:'#6 営業保証金と保証協会', min:17 },
+  { id:'v08', cat:'takkengyoho', label:'宅建業法', title:'#7 保証協会と営業保証金の違い', min:17 },
+  { id:'v09', cat:'takkengyoho', label:'宅建業法', title:'#8 媒介契約書・三大書面', min:13 },
+  { id:'v10', cat:'takkengyoho', label:'宅建業法', title:'#9 35条書面・重要事項説明', min:15 },
+  { id:'v11', cat:'takkengyoho', label:'宅建業法', title:'#10 35条書面をゴロで攻略', min:13 },
+  { id:'v12', cat:'takkengyoho', label:'宅建業法', title:'#11 37条書面を攻略', min:13 },
+  { id:'v13', cat:'takkengyoho', label:'宅建業法', title:'#12 報酬の制限7パターン', min:20 },
+  { id:'v14', cat:'takkengyoho', label:'宅建業法', title:'#13 8種制限・クーリングオフ', min:22 },
+  { id:'v15', cat:'takkengyoho', label:'宅建業法', title:'入門 監督処分や罰則', min:5 },
+  { id:'v16', cat:'takkengyoho', label:'宅建業法', title:'入門 住宅瑕疵担保履行法', min:7 },
+  // 法令上の制限 (11本, ~170min)
+  { id:'v17', cat:'hourei', label:'法令制限', title:'#0 法令上の制限の攻略法', min:10, url:'https://www.youtube.com/playlist?list=PLthNnJTp6AOfK6FEu7DPkgd_cySe4zQdf' },
+  { id:'v18', cat:'hourei', label:'法令制限', title:'#1 都市計画法スタート', min:27 },
+  { id:'v19', cat:'hourei', label:'法令制限', title:'#2 13種類の用途地域', min:17 },
+  { id:'v20', cat:'hourei', label:'法令制限', title:'入門 都市計画決定と開発許可制度', min:9 },
+  { id:'v21', cat:'hourei', label:'法令制限', title:'#3 建築基準法・建築確認', min:15 },
+  { id:'v22', cat:'hourei', label:'法令制限', title:'#4 2項道路・単体規定と集団規定', min:15 },
+  { id:'v23', cat:'hourei', label:'法令制限', title:'入門 建蔽率・容積率・高さ制限・防火地域', min:15 },
+  { id:'v24', cat:'hourei', label:'法令制限', title:'#5 農地法3条・4条・5条', min:12 },
+  { id:'v25', cat:'hourei', label:'法令制限', title:'#6 盛土規制法', min:12 },
+  { id:'v26', cat:'hourei', label:'法令制限', title:'入門 国土利用計画法', min:10 },
+  { id:'v27', cat:'hourei', label:'法令制限', title:'入門 土地区画整理法', min:10 },
+  // 税その他 (5本, ~65min)
+  { id:'v28', cat:'zei', label:'税その他', title:'#1 不動産取得税・固定資産税', min:20, url:'https://www.youtube.com/playlist?list=PLthNnJTp6AOfKXA2NZgOIZW7x7Q1F7hlc' },
+  { id:'v29', cat:'zei', label:'税その他', title:'入門 所得税・印紙税・登録免許税', min:5 },
+  { id:'v30', cat:'zei', label:'税その他', title:'#2 住宅金融支援機構法', min:15 },
+  { id:'v31', cat:'zei', label:'税その他', title:'入門 不動産鑑定評価と地価公示法', min:12 },
+  { id:'v32', cat:'zei', label:'税その他', title:'入門 土地・建物', min:10 },
+  // 民法 (10本, ~201min + 追加予定)
+  { id:'v33', cat:'minpo', label:'民法', title:'#1 制限行為能力者', min:20, url:'https://www.youtube.com/playlist?list=PLthNnJTp6AOctJVat8gOCOJcrg6jBx3rP' },
+  { id:'v34', cat:'minpo', label:'民法', title:'#2 意思表示の5類型', min:24 },
+  { id:'v35', cat:'minpo', label:'民法', title:'#3 代理のコツ', min:25 },
+  { id:'v36', cat:'minpo', label:'民法', title:'#4 時効の援用・完成猶予・更新', min:28 },
+  { id:'v37', cat:'minpo', label:'民法', title:'#5 物権変動・対抗要件', min:24 },
+  { id:'v38', cat:'minpo', label:'民法', title:'#6 相隣関係・共有', min:18 },
+  { id:'v39', cat:'minpo', label:'民法', title:'#7 抵当権', min:32 },
+  { id:'v40', cat:'minpo', label:'民法', title:'#8 根抵当権', min:15 },
+  { id:'v41', cat:'minpo', label:'民法', title:'入門 不動産登記法', min:6 },
+  { id:'v42', cat:'minpo', label:'民法', title:'入門 区分所有法', min:9 },
+];
+
+// Video weekly schedule (1st round)
+const VIDEO_SCHEDULE = [
+  { week: 1, period: '3/27〜4/1', cat: '宅建業法(前半)', videos: 'v01〜v08', count: 8, totalMin: 132, detail: '#0入門 → #7保証協会' },
+  { week: 2, period: '4/2〜4/8', cat: '宅建業法(後半)', videos: 'v09〜v16', count: 8, totalMin: 108, detail: '#8媒介契約 → 瑕疵担保法' },
+  { week: 3, period: '4/9〜4/15', cat: '法令上の制限(前半)', videos: 'v17〜v23', count: 7, totalMin: 108, detail: '#0攻略法 → 建蔽率・容積率' },
+  { week: 4, period: '4/16〜4/22', cat: '法令制限(後半)+税', videos: 'v24〜v32', count: 9, totalMin: 111, detail: '農地法 → 税その他全部' },
+  { week: 5, period: '4/23〜4/29', cat: '民法(前半)', videos: 'v33〜v38', count: 6, totalMin: 139, detail: '#1制限行為能力者 → #6共有' },
+  { week: 6, period: '4/30〜5/6', cat: '民法(後半)', videos: 'v39〜v42', count: 4, totalMin: 62, detail: '#7抵当権 → 区分所有法 ★1周目完了' },
+  { week: 7, period: '5/7〜5/13', cat: '2周目:宅建業法+法令', videos: '全分野', count: 27, totalMin: '倍速', detail: '1.5倍速で宅建業法→法令制限を復習' },
+  { week: 8, period: '5/14〜5/20', cat: '2周目:税+民法', videos: '全分野', count: 15, totalMin: '倍速', detail: '1.5倍速で税その他→民法を復習 ★2周目完了' },
+];
+
+const PHASES = [
+  {
+    title: 'Phase 1-A: 動画で全体像をつかむ',
+    dates: '3月下旬〜5月上旬',
+    badge: '#f59e0b',
+    items: [
+      { period: '3/26〜3/31', main: '宅建士', mainTime: '1h', sub: '—', subTime: '', content: '📺 ゆーき大学の再生リスト(宅建業法/権利関係/法令制限/税その他)をブックマーク → 動画視聴開始' },
+      { period: '4月前半', main: '宅建士', mainTime: '1h', sub: '応用情報', subTime: '30min', content: '📺 ゆーき大学 動画1周目：宅建業法 → 法令制限 → 税その他 → 権利関係の順で視聴' },
+      { period: '4月後半', main: '宅建士', mainTime: '1h', sub: '応用情報', subTime: '30min', content: '📺 ゆーき大学 動画2周目 ＋ トリセツ分野別過去問題集を購入' },
+      { period: '5月上旬', main: '宅建士', mainTime: '1h', sub: '応用情報', subTime: '30min', content: '📺 動画2周目完了 → 問題集フェーズへ移行' },
+    ]
+  },
+  {
+    title: 'Phase 1-B: 問題集を音読で周回',
+    dates: '5月〜6月',
+    badge: '#f59e0b',
+    items: [
+      { period: '5月前半', main: '宅建士', mainTime: '1h', sub: '応用情報', subTime: '30min', content: '📖 トリセツ問題集「宅建業法」を音読で1周（問題→考える→解説を全て音読）' },
+      { period: '5月後半', main: '宅建士', mainTime: '1h', sub: '応用情報', subTime: '30min', content: '📖 トリセツ問題集「法令上の制限」を音読で1周' },
+      { period: '6月前半', main: '宅建士', mainTime: '1.5h', sub: '応用情報', subTime: '30min', content: '📖 問題集「税その他」音読1周 ＋ 棚田行政書士チャンネルで理解を深める' },
+      { period: '6月後半', main: '宅建士', mainTime: '1.5h', sub: '応用情報', subTime: '30min', content: '📖 問題集「権利関係」音読1周 ＋ 問題集2周目開始（暗記を少し意識）' },
+    ]
+  },
+  {
+    title: 'Phase 1-C: 暗記本気モード（申込後〜）',
+    dates: '7月〜9月中旬',
+    badge: '#f59e0b',
+    items: [
+      { period: '7月前半', main: '宅建士', mainTime: '1.5h', sub: '応用情報', subTime: '30min', content: '🔥 試験申込を早めに完了！暗記モードへ移行。全科目を同時並行で学習開始' },
+      { period: '7月後半', main: '宅建士', mainTime: '1.5h', sub: '応用情報', subTime: '30min', content: '🔥 朝:権利関係 / 昼:法令制限・税 / 夜:宅建業法暗記。問題集3周目' },
+      { period: '8月', main: '宅建士', mainTime: '1.5h', sub: '応用情報', subTime: '30min', content: '🔥 問題集3周目継続＋動画3周目以上。基礎エリアの習熟度を深める ※電工申込(8/17〜)' },
+      { period: '9月前半', main: '宅建士', mainTime: '1.5h', sub: '応用情報', subTime: '30min', content: '🔥 弱点分野を重点復習。範囲を広げず基礎の理解を洗練させる' },
+    ]
+  },
+  {
+    title: 'Phase 1-D: 直前模試＋最終仕上げ',
+    dates: '9月中旬〜10月18日',
+    badge: '#f59e0b',
+    items: [
+      { period: '9月中旬', main: '宅建士', mainTime: '2h', sub: '', subTime: '', content: '📝 TAC直前予想模試を購入して解き始める（難易度高めなので心折れない！）' },
+      { period: '9月後半', main: '宅建士', mainTime: '2h', sub: '', subTime: '', content: '📝 予想模試を進めつつ、知らない論点は深追いせず基礎を固める' },
+      { period: '10/1〜10/11', main: '宅建士', mainTime: '2h', sub: '', subTime: '', content: '📝 2時間制限で本番形式模試。マークシート練習。弱点最終復習' },
+      { period: '10/12〜10/17', main: '宅建士', mainTime: '2h+', sub: '', subTime: '', content: '🎯 最終確認：宅建業法の暗記確認 → 法令制限 → 全体さらい → 10/18 本試験！' },
+    ]
+  },
+  {
+    title: 'Phase 2: 応用情報 集中期',
+    dates: '10月下旬〜11月中旬',
+    badge: '#8b5cf6',
+    items: [
+      { period: '10月後半', main: '応用情報', mainTime: '2h', sub: '電気工事士', subTime: '30min', content: '午前総仕上げ・午後重点分野演習 + 電工筆記CBT受験' },
+      { period: '11月前半', main: '応用情報', mainTime: '2h', sub: '', subTime: '', content: '過去問演習・模試 → CBT受験' },
+    ]
+  },
+  {
+    title: 'Phase 3: 電気工事士 集中期',
+    dates: '11月中旬〜12月中旬',
+    badge: '#10b981',
+    items: [
+      { period: '11月後半', main: '電気工事士', mainTime: '2h', sub: '', subTime: '', content: '技能試験対策：候補問題の練習開始' },
+      { period: '12月前半', main: '電気工事士', mainTime: '2h', sub: '', subTime: '', content: '候補問題の総仕上げ → 12/12-13 技能試験' },
+    ]
+  }
+];
+
+// ===== LOCAL STORAGE =====
+const STORAGE_KEY = 'selfStudy2026';
+
+function loadData() {
+  try {
+    const d = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    return { checked: d.checked || {}, logs: d.logs || [] };
+  } catch { return { checked: {}, logs: [] }; }
+}
+// Fallback: use in-memory storage if localStorage fails
+let memoryStore = { checked: {}, logs: [] };
+function safeLoadData() {
+  try { return loadData(); }
+  catch { return memoryStore; }
+}
+function saveData(data) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+  catch { memoryStore = data; }
+}
+
+// ===== UTILITIES =====
+function daysBetween(a, b) {
+  return Math.ceil((b - a) / (1000 * 60 * 60 * 24));
+}
+function formatDate(d) {
+  return `${d.getMonth()+1}/${d.getDate()}`;
+}
+function formatDateFull(d) {
+  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
+}
+
+// ===== RENDER: Stats =====
+function renderStats() {
+  const container = document.getElementById('statsRow');
+  const nextExam = Object.values(CERTS)
+    .flatMap(c => c.examDates.filter(e => e.type === 'exam' && e.date > TODAY))
+    .sort((a, b) => a.date - b.date)[0];
+  const daysToNext = nextExam ? daysBetween(TODAY, nextExam.date) : '—';
+
+  const data = safeLoadData();
+  const totalChecked = Object.values(data.checked).filter(Boolean).length;
+  const totalLogs = data.logs.length;
+  const totalMinutes = data.logs.reduce((s, l) => s + (l.minutes || 0), 0);
+
+  container.innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">次の試験まで</div>
+      <div class="stat-value" style="color:${daysToNext <= 30 ? 'var(--danger)' : 'var(--primary)'}">${daysToNext}</div>
+      <div class="stat-unit">${nextExam ? nextExam.label : ''}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">全体進捗</div>
+      <div class="stat-value">${Math.round(totalChecked / CHECKLIST_ITEMS.length * 100)}<span style="font-size:1rem">%</span></div>
+      <div class="stat-unit">${totalChecked} / ${CHECKLIST_ITEMS.length} タスク完了</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">累計学習時間</div>
+      <div class="stat-value">${Math.floor(totalMinutes/60)}<span style="font-size:1rem">h</span>${totalMinutes%60 ? '<span style="font-size:1rem">' + (totalMinutes%60) + 'm</span>' : ''}</div>
+      <div class="stat-unit">${totalLogs}回の学習記録</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">目標資格数</div>
+      <div class="stat-value">3</div>
+      <div class="stat-unit">宅建 / AP / 電工</div>
+    </div>
+  `;
+}
+
+// ===== RENDER: Alert =====
+function renderAlert() {
+  const banner = document.getElementById('alertBanner');
+  const upcoming = MILESTONES
+    .filter(m => m.date > TODAY && m.urgent)
+    .sort((a, b) => a.date - b.date)[0];
+
+  if (!upcoming) { banner.style.display = 'none'; return; }
+
+  const days = daysBetween(TODAY, upcoming.date);
+  document.getElementById('alertText').textContent =
+    `${upcoming.title} まであと ${days} 日！`;
+  document.getElementById('alertSub').textContent = upcoming.desc;
+}
+
+// ===== RENDER: Cert Cards =====
+function renderCertCards() {
+  const grid = document.getElementById('certGrid');
+  grid.innerHTML = '';
+
+  for (const [key, cert] of Object.entries(CERTS)) {
+    const daysLeft = daysBetween(TODAY, cert.mainExamDate);
+    const totalDays = daysBetween(new Date(2026, 0, 1), cert.mainExamDate);
+    const elapsed = daysBetween(new Date(2026, 0, 1), TODAY);
+    const pct = Math.min(100, Math.max(0, Math.round(elapsed / totalDays * 100)));
+
+    const nextEvent = cert.examDates.filter(e => e.date > TODAY).sort((a, b) => a.date - b.date)[0];
+
+    grid.innerHTML += `
+      <div class="cert-card">
+        <div class="cert-card-top ${key}">
+          <h3>${cert.name}</h3>
+          <div class="exam-date">${nextEvent ? nextEvent.label + '：' + formatDateFull(nextEvent.date) : '試験日程確認中'}</div>
+        </div>
+        <div class="cert-card-body">
+          <div class="cert-meta">
+            <div class="cert-meta-item">
+              <div class="label">残り日数</div>
+              <div class="value" style="color:${daysLeft <= 60 ? 'var(--danger)' : cert.color}">${daysLeft > 0 ? daysLeft + '日' : '終了'}</div>
+            </div>
+            <div class="cert-meta-item">
+              <div class="label">目安学習時間</div>
+              <div class="value">${cert.studyHours}h</div>
+            </div>
+            <div class="cert-meta-item">
+              <div class="label">本試験</div>
+              <div class="value">${cert.mainExamDate.getMonth()+1}月</div>
+            </div>
+          </div>
+          <div class="countdown-bar">
+            <div class="countdown-fill" style="width:${pct}%;background:${cert.color}"></div>
+          </div>
+          <div style="text-align:right;font-size:.75rem;color:var(--gray-400);margin-top:4px">経過 ${pct}%</div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+// ===== RENDER: Gantt =====
+function renderGantt() {
+  const chart = document.getElementById('ganttChart');
+  const months = ['3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  const startMonth = 2; // March = index 2
+
+  let html = '<div class="gantt-months"><div class="gantt-month-label"></div>';
+  months.forEach(m => { html += `<div class="gantt-month-label">${m}</div>`; });
+  html += '</div>';
+
+  for (const [key, cert] of Object.entries(CERTS)) {
+    html += `<div class="gantt-row"><div class="gantt-label" style="color:${cert.color}">${cert.shortName}</div>`;
+    for (let i = 0; i < 10; i++) {
+      html += '<div class="gantt-cell">';
+      const cellMonth = startMonth + i;
+      cert.phases.forEach(phase => {
+        const pStart = phase.start.getMonth();
+        const pEnd = phase.end.getMonth();
+        if (cellMonth >= pStart && cellMonth <= pEnd) {
+          const left = cellMonth === pStart ? '5%' : '0';
+          const right = cellMonth === pEnd ? '5%' : '0';
+          html += `<div class="gantt-bar" style="left:${left};right:${right};background:${cert.color}">${cellMonth === pStart ? phase.label : ''}</div>`;
+        }
+      });
+      // Exam markers
+      cert.examDates.forEach(e => {
+        if (e.date.getMonth() === cellMonth && e.type === 'exam') {
+          const dayPct = Math.round(e.date.getDate() / 30 * 100);
+          html += `<div class="gantt-marker" style="left:${dayPct}%"><div class="gantt-marker-label">${e.label.replace(/[（(].*/, '')}</div></div>`;
+        }
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+
+  chart.innerHTML = html;
+}
+
+// ===== RENDER: Milestones =====
+function renderMilestones() {
+  const container = document.getElementById('milestoneTimeline');
+  const sorted = [...MILESTONES].sort((a, b) => a.date - b.date);
+  container.innerHTML = sorted.map(m => {
+    const isPast = m.date < TODAY;
+    const days = daysBetween(TODAY, m.date);
+    const daysText = isPast ? `${-days}日前` : `あと${days}日`;
+    return `
+      <div class="timeline-item" style="${isPast ? 'opacity:.5' : ''}">
+        <div class="timeline-dot ${m.tag}"></div>
+        <div class="timeline-content">
+          <div class="timeline-date">${formatDateFull(m.date)}（${daysText}）</div>
+          <div class="timeline-title">${m.title}</div>
+          <div class="timeline-desc">${m.desc}</div>
+          <span class="timeline-tag tag-${m.tag}">${m.tagLabel}</span>
+          ${m.urgent && !isPast ? '<span class="timeline-tag tag-deadline" style="margin-left:4px">重要</span>' : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ===== RENDER: Phase Schedule =====
+function renderPhaseSchedule() {
+  const container = document.getElementById('phaseSchedule');
+  container.innerHTML = PHASES.map(phase => `
+    <div class="phase-section">
+      <div class="phase-header">
+        <span class="phase-badge" style="background:${phase.badge}">${phase.title.split(':')[0]}</span>
+        <div>
+          <div class="phase-title">${phase.title.split(':')[1] || ''}</div>
+          <div class="phase-dates">${phase.dates}</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body" style="padding:0">
+          <table class="week-table">
+            <thead><tr><th>時期</th><th>メイン科目</th><th>サブ科目</th><th>学習内容</th></tr></thead>
+            <tbody>
+              ${phase.items.map(item => `
+                <tr>
+                  <td style="white-space:nowrap;font-weight:600">${item.period}</td>
+                  <td><span class="subject-badge ${item.main === '電気工事士' ? 'denki' : item.main === '宅建士' ? 'takken' : 'ap'}">${item.main}</span> ${item.mainTime}</td>
+                  <td>${item.sub ? `<span class="subject-badge ${item.sub === '応用情報' ? 'ap' : item.sub === '宅建' ? 'takken' : 'denki'}">${item.sub}</span> ${item.subTime}` : '—'}</td>
+                  <td>${item.content}</td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ===== RENDER: Weekly Plan =====
+function renderWeeklyPlan() {
+  const now = new Date(TODAY);
+  const dayOfWeek = now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+
+  document.getElementById('currentWeekRange').textContent =
+    `${formatDate(monday)} 〜 ${formatDate(sunday)}`;
+
+  // Determine current phase
+  let currentPhase = 'takken'; // default: 宅建士 first
+  if (TODAY >= new Date(2026, 10, 15)) currentPhase = 'denki';
+  else if (TODAY >= new Date(2026, 9, 19)) currentPhase = 'ap';
+
+  const weekPlans = {
+    takken: (() => {
+      // Dynamic weekly plan based on current date
+      const weekNum = Math.ceil(daysBetween(new Date(2026, 2, 26), TODAY) / 7);
+      if (weekNum <= 2) {
+        // Week 1-2: 宅建業法の動画
+        return [
+          { day: '月', subj: 'takken', subjName: '宅建士', content: '📺 ゆーき大学 宅建業法 動画2本視聴', time: '40min' },
+          { day: '火', subj: 'takken', subjName: '宅建士', content: '📺 ゆーき大学 宅建業法 動画2本視聴', time: '40min' },
+          { day: '水', subj: 'ap', subjName: '応用情報', content: '午前問題（テクノロジ系）', time: '1h' },
+          { day: '木', subj: 'takken', subjName: '宅建士', content: '📺 ゆーき大学 宅建業法 動画2本視聴', time: '40min' },
+          { day: '金', subj: 'takken', subjName: '宅建士', content: '📺 ゆーき大学 宅建業法 動画2本視聴', time: '40min' },
+          { day: '土', subj: 'takken', subjName: '宅建士', content: '📺 ゆーき大学 動画の復習・メモ整理', time: '1h' },
+          { day: '日', subj: 'ap', subjName: '応用情報', content: '午前問題演習', time: '1h' },
+        ];
+      } else if (weekNum <= 4) {
+        // Week 3-4: 法令制限・税その他の動画
+        return [
+          { day: '月', subj: 'takken', subjName: '宅建士', content: '📺 ゆーき大学 法令上の制限 動画2本', time: '40min' },
+          { day: '火', subj: 'takken', subjName: '宅建士', content: '📺 ゆーき大学 法令上の制限 動画2本', time: '40min' },
+          { day: '水', subj: 'ap', subjName: '応用情報', content: '午前問題（テクノロジ系）', time: '1h' },
+          { day: '木', subj: 'takken', subjName: '宅建士', content: '📺 ゆーき大学 税その他の動画', time: '40min' },
+          { day: '金', subj: 'takken', subjName: '宅建士', content: '📺 法令制限・税 残りの動画', time: '40min' },
+          { day: '土', subj: 'takken', subjName: '宅建士', content: '📺 動画復習 + メモ整理', time: '1h' },
+          { day: '日', subj: 'ap', subjName: '応用情報', content: '午前問題演習', time: '1h' },
+        ];
+      } else if (weekNum <= 6) {
+        // Week 5-6: 民法の動画
+        return [
+          { day: '月', subj: 'takken', subjName: '宅建士', content: '📺 ゆーき大学 民法 動画2本', time: '50min' },
+          { day: '火', subj: 'takken', subjName: '宅建士', content: '📺 ゆーき大学 民法 動画2本', time: '50min' },
+          { day: '水', subj: 'ap', subjName: '応用情報', content: '午前問題（テクノロジ系）', time: '1h' },
+          { day: '木', subj: 'takken', subjName: '宅建士', content: '📺 ゆーき大学 民法 動画1-2本', time: '40min' },
+          { day: '金', subj: 'takken', subjName: '宅建士', content: '📺 民法 残り + トリセツ問題集購入', time: '1h' },
+          { day: '土', subj: 'takken', subjName: '宅建士', content: '📺 1周目完了！ 全体の復習・ノート整理', time: '1.5h' },
+          { day: '日', subj: 'ap', subjName: '応用情報', content: '午前問題演習', time: '1h' },
+        ];
+      } else if (weekNum <= 8) {
+        // Week 7-8: 動画2周目（倍速）+ 問題集開始
+        return [
+          { day: '月', subj: 'takken', subjName: '宅建士', content: '📺 2周目:宅建業法(1.5倍速) + 📖 問題集音読', time: '1h' },
+          { day: '火', subj: 'takken', subjName: '宅建士', content: '📖 トリセツ問題集「宅建業法」音読', time: '1h' },
+          { day: '水', subj: 'ap', subjName: '応用情報', content: '午前問題（テクノロジ系）', time: '1h' },
+          { day: '木', subj: 'takken', subjName: '宅建士', content: '📺 2周目:法令制限(1.5倍速) + 📖 問題集', time: '1h' },
+          { day: '金', subj: 'takken', subjName: '宅建士', content: '📖 トリセツ問題集「法令制限」音読', time: '1.5h' },
+          { day: '土', subj: 'takken', subjName: '宅建士', content: '📺 2周目:税+民法(1.5倍速) + 📖 問題集', time: '1.5h' },
+          { day: '日', subj: 'ap', subjName: '応用情報', content: '午前問題演習', time: '1h' },
+        ];
+      } else if (weekNum <= 14) {
+        // Week 9-14 (5月下旬-6月): 問題集メイン + 棚田チャンネル
+        return [
+          { day: '月', subj: 'takken', subjName: '宅建士', content: '📖 トリセツ問題集 音読（宅建業法セクション）', time: '1h' },
+          { day: '火', subj: 'takken', subjName: '宅建士', content: '📖 トリセツ問題集 音読（法令制限セクション）', time: '1h' },
+          { day: '水', subj: 'ap', subjName: '応用情報', content: '午前問題（マネジメント系）', time: '1h' },
+          { day: '木', subj: 'takken', subjName: '宅建士', content: '📖 問題集 音読（税その他→権利関係）', time: '1h' },
+          { day: '金', subj: 'takken', subjName: '宅建士', content: '📺 棚田行政書士 借地借家法等 + 復習', time: '1.5h' },
+          { day: '土', subj: 'takken', subjName: '宅建士', content: '📖 問題集2周目 + 弱点分野の動画視聴', time: '1.5h' },
+          { day: '日', subj: 'ap', subjName: '応用情報', content: '午前・午後問題演習', time: '1h' },
+        ];
+      } else {
+        // Week 15+: 暗記本気モード（7月〜）
+        return [
+          { day: '月', subj: 'takken', subjName: '宅建士', content: '朝: 権利関係(頭フレッシュな時に暗記)', time: '1.5h' },
+          { day: '火', subj: 'takken', subjName: '宅建士', content: '昼: 法令制限・税 / 夜: 宅建業法 暗記', time: '1.5h' },
+          { day: '水', subj: 'ap', subjName: '応用情報', content: '午後問題演習', time: '1h' },
+          { day: '木', subj: 'takken', subjName: '宅建士', content: '全科目並行: 問題集3周目 + 暗記ノート', time: '1.5h' },
+          { day: '金', subj: 'takken', subjName: '宅建士', content: '過去問演習 + 弱点分野の集中復習', time: '1.5h' },
+          { day: '土', subj: 'takken', subjName: '宅建士', content: '📺 ゆーき大学/棚田 動画で復習 + 暗記', time: '2h' },
+          { day: '日', subj: 'ap', subjName: '応用情報', content: '午前・午後問題演習', time: '1h' },
+        ];
+      }
+    })(),
+    ap: [
+      { day: '月', subj: 'ap', subjName: '応用情報', content: '午前問題演習', time: '2h' },
+      { day: '火', subj: 'ap', subjName: '応用情報', content: '午後問題（選択分野1）', time: '2h' },
+      { day: '水', subj: 'denki', subjName: '電気工事士', content: '筆記対策・過去問', time: '1h' },
+      { day: '木', subj: 'ap', subjName: '応用情報', content: '午後問題（選択分野2）', time: '2h' },
+      { day: '金', subj: 'ap', subjName: '応用情報', content: '午前問題の復習', time: '1.5h' },
+      { day: '土', subj: 'ap', subjName: '応用情報', content: '模試・弱点分析', time: '2h' },
+      { day: '日', subj: 'denki', subjName: '電気工事士', content: '筆記CBT対策', time: '1h' },
+    ],
+    denki: [
+      { day: '月', subj: 'denki', subjName: '電気工事士', content: '候補問題の練習（問題1-3）', time: '2h' },
+      { day: '火', subj: 'denki', subjName: '電気工事士', content: '候補問題の練習（問題4-6）', time: '2h' },
+      { day: '水', subj: 'denki', subjName: '電気工事士', content: '複線図の描き方・確認', time: '1.5h' },
+      { day: '木', subj: 'denki', subjName: '電気工事士', content: '候補問題の練習（問題7-9）', time: '2h' },
+      { day: '金', subj: 'denki', subjName: '電気工事士', content: '候補問題の練習（問題10-13）', time: '2h' },
+      { day: '土', subj: 'denki', subjName: '電気工事士', content: 'タイムトライアル・弱点復習', time: '2h' },
+      { day: '日', subj: 'denki', subjName: '電気工事士', content: '全体通し練習・工具確認', time: '1.5h' },
+    ]
+  };
+
+  const plan = weekPlans[currentPhase];
+  document.getElementById('weekTableBody').innerHTML = plan.map(p => `
+    <tr>
+      <td style="font-weight:600">${p.day}</td>
+      <td><span class="subject-badge ${p.subj}">${p.subjName}</span></td>
+      <td>${p.content}</td>
+      <td style="white-space:nowrap;font-weight:600">${p.time}</td>
+    </tr>
+  `).join('');
+
+  // Render video schedule table
+  const vsBody = document.getElementById('videoScheduleBody');
+  if (vsBody) {
+    const catColors = {
+      '宅建業法': '#f59e0b', '法令': '#e67e22', '税': '#9b59b6', '民法': '#3498db'
+    };
+    vsBody.innerHTML = VIDEO_SCHEDULE.map(s => {
+      const isCurrentWeek = (() => {
+        const parts = s.period.split('〜');
+        if (parts.length < 2) return false;
+        const [sm, sd] = parts[0].split('/').map(Number);
+        const [em, ed] = parts[1].split('/').map(Number);
+        const start = new Date(2026, sm-1, sd);
+        const end = new Date(2026, em-1, ed, 23, 59);
+        return TODAY >= start && TODAY <= end;
+      })();
+      return `<tr style="${isCurrentWeek ? 'background:var(--takken-light);font-weight:600' : ''}">
+        <td style="white-space:nowrap;text-align:center">${isCurrentWeek ? '👉 ' : ''}第${s.week}週</td>
+        <td style="white-space:nowrap">${s.period}</td>
+        <td><span class="subject-badge takken">${s.cat}</span></td>
+        <td>${s.detail}</td>
+        <td style="text-align:center">${s.count}本</td>
+        <td style="text-align:center;white-space:nowrap">${typeof s.totalMin === 'number' ? Math.round(s.totalMin/60*10)/10 + 'h' : s.totalMin}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Render video checklist
+  renderVideoChecklist();
+}
+
+// ===== RENDER: Video Checklist =====
+function renderVideoChecklist() {
+  const data = safeLoadData();
+  const filter = document.getElementById('videoFilter')?.value || 'all';
+  const items = filter === 'all' ? VIDEOS : VIDEOS.filter(v => v.cat === filter);
+
+  const ul = document.getElementById('videoChecklist');
+  if (!ul) return;
+
+  const totalAll = filter === 'all' ? VIDEOS.length : items.length;
+  const doneCount = items.filter(v => data.checked['vid_'+v.id]).length;
+  const pct = totalAll ? Math.round(doneCount / totalAll * 100) : 0;
+
+  const progText = document.getElementById('videoProgressText');
+  if (progText) progText.textContent = `${doneCount}/${totalAll} 視聴済み（${pct}%）`;
+  const progFill = document.getElementById('videoProgressFill');
+  if (progFill) progFill.style.width = pct + '%';
+
+  const catLabels = { takkengyoho:'宅建業法', hourei:'法令制限', zei:'税その他', minpo:'民法' };
+  const catBadgeColors = { takkengyoho:'takken', hourei:'takken', zei:'ap', minpo:'ap' };
+
+  ul.innerHTML = items.map(v => {
+    const checked = !!data.checked['vid_'+v.id];
+    return `
+      <li data-vid="${v.id}">
+        <div class="check-box ${checked ? 'checked' : ''}"></div>
+        <span class="subject-badge ${catBadgeColors[v.cat]}" style="min-width:60px;text-align:center">${catLabels[v.cat]}</span>
+        <span class="check-text ${checked ? 'done' : ''}" style="flex:1">${v.title}</span>
+        <span style="font-size:.8rem;color:var(--gray-400);white-space:nowrap">${v.min}分</span>
+      </li>`;
+  }).join('');
+
+  ul.querySelectorAll('li').forEach(li => {
+    li.addEventListener('click', () => {
+      const vid = li.dataset.vid;
+      const data = safeLoadData();
+      data.checked['vid_'+vid] = !data.checked['vid_'+vid];
+      saveData(data);
+      renderVideoChecklist();
+      renderStats();
+    });
+  });
+}
+
+// ===== RENDER: Progress =====
+function renderProgress() {
+  const container = document.getElementById('progressBars');
+  const data = safeLoadData();
+
+  const certs = [
+    { key: 'denki', name: '第二種電気工事士', color: '#10b981' },
+    { key: 'takken', name: '宅地建物取引士', color: '#f59e0b' },
+    { key: 'ap', name: '応用情報技術者', color: '#8b5cf6' },
+  ];
+
+  container.innerHTML = certs.map(cert => {
+    const items = CHECKLIST_ITEMS.filter(i => i.cert === cert.key);
+    const done = items.filter(i => data.checked[i.id]).length;
+    const pct = items.length ? Math.round(done / items.length * 100) : 0;
+    return `
+      <div class="progress-section">
+        <div class="progress-header">
+          <span class="progress-label" style="color:${cert.color}">${cert.name}</span>
+          <span class="progress-pct">${done}/${items.length}（${pct}%）</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:${pct}%;background:${cert.color}"></div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ===== RENDER: Checklist =====
+function renderChecklist() {
+  const data = safeLoadData();
+  const filter = document.getElementById('checklistFilter').value;
+  const items = filter === 'all' ? CHECKLIST_ITEMS : CHECKLIST_ITEMS.filter(i => i.cert === filter);
+
+  const ul = document.getElementById('checklist');
+  ul.innerHTML = items.map(item => {
+    const checked = !!data.checked[item.id];
+    return `
+      <li data-id="${item.id}">
+        <div class="check-box ${checked ? 'checked' : ''}"></div>
+        <span class="subject-badge ${item.cert}">${item.cert === 'denki' ? '電工' : item.cert === 'takken' ? '宅建' : 'AP'}</span>
+        <span class="check-text ${checked ? 'done' : ''}">${item.text}</span>
+      </li>`;
+  }).join('');
+
+  ul.querySelectorAll('li').forEach(li => {
+    li.addEventListener('click', () => {
+      const id = li.dataset.id;
+      const data = safeLoadData();
+      data.checked[id] = !data.checked[id];
+      saveData(data);
+      renderChecklist();
+      renderProgress();
+      renderStats();
+    });
+  });
+}
+
+// ===== RENDER: Logs =====
+function renderLogs() {
+  const data = safeLoadData();
+  const entries = document.getElementById('logEntries');
+  const summary = document.getElementById('logSummary');
+
+  if (!data.logs.length) {
+    entries.innerHTML = '<p style="color:var(--gray-400);text-align:center;padding:40px 0">まだ記録がありません。「+ 記録する」ボタンから学習を記録しましょう。</p>';
+    summary.innerHTML = '';
+    return;
+  }
+
+  // Summary by subject
+  const bySubject = {};
+  data.logs.forEach(l => {
+    bySubject[l.subject] = (bySubject[l.subject] || 0) + l.minutes;
+  });
+  const subjectNames = { denki: '電気工事士', takken: '宅建士', ap: '応用情報' };
+  const subjectColors = { denki: '#10b981', takken: '#f59e0b', ap: '#8b5cf6' };
+
+  summary.innerHTML = `
+    <div style="display:flex;gap:16px;flex-wrap:wrap">
+      ${Object.entries(bySubject).map(([k, v]) => `
+        <div style="padding:10px 16px;background:${CERTS[k]?.colorLight || '#f3f4f6'};border-radius:8px;font-size:.9rem">
+          <strong style="color:${subjectColors[k]}">${subjectNames[k]}</strong>：${Math.floor(v/60)}h${v%60}m
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  const sorted = [...data.logs].sort((a, b) => new Date(b.date) - new Date(a.date));
+  entries.innerHTML = sorted.map(l => {
+    const d = new Date(l.date);
+    return `
+      <div class="log-entry">
+        <div class="log-date-badge">${d.getMonth()+1}/${d.getDate()}</div>
+        <span class="subject-badge ${l.subject}">${subjectNames[l.subject] || l.subject}</span>
+        <div class="log-details">${l.memo || '（メモなし）'}</div>
+        <div class="log-hours">${Math.floor(l.minutes/60)}h${l.minutes%60 ? l.minutes%60+'m' : ''}</div>
+      </div>`;
+  }).join('');
+}
+
+// ===== Log Modal =====
+function openLogModal() {
+  document.getElementById('logDate').value = TODAY.toISOString().split('T')[0];
+  document.getElementById('logModal').classList.add('open');
+}
+function closeLogModal() {
+  document.getElementById('logModal').classList.remove('open');
+}
+function saveLog() {
+  const date = document.getElementById('logDate').value;
+  const subject = document.getElementById('logSubject').value;
+  const minutes = parseInt(document.getElementById('logMinutes').value) || 0;
+  const memo = document.getElementById('logMemo').value.trim();
+
+  if (!date || !minutes) return;
+
+  const data = safeLoadData();
+  data.logs.push({ date, subject, minutes, memo, id: Date.now() });
+  saveData(data);
+  closeLogModal();
+  renderLogs();
+  renderStats();
+  document.getElementById('logMemo').value = '';
+}
+
+// ===== TABS =====
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+document.getElementById('checklistFilter').addEventListener('change', renderChecklist);
+document.getElementById('videoFilter')?.addEventListener('change', renderVideoChecklist);
+
+// ===== INIT =====
+function init() {
+  renderAlert();
+  renderStats();
+  renderCertCards();
+  renderGantt();
+  renderMilestones();
+  renderPhaseSchedule();
+  renderWeeklyPlan();
+  renderProgress();
+  renderChecklist();
+  renderLogs();
+}
+init();
+</script>
+</body>
+</html>

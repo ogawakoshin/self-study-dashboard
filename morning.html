@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="朝の学習">
+<link rel="manifest" href="manifest.json">
+<title>朝の着手トリガー</title>
+<style>
+  :root {
+    --takken: #f59e0b;
+    --takken-bg: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    --ap: #8b5cf6;
+    --ap-bg: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    --denki: #10b981;
+    --denki-bg: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    --rest: #6b7280;
+    --rest-bg: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Kaku Gothic ProN', sans-serif;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    color: #fff;
+    overflow: hidden;
+    transition: background 0.5s;
+  }
+
+  .safe-area {
+    padding-top: env(safe-area-inset-top, 20px);
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+    padding-left: env(safe-area-inset-left, 16px);
+    padding-right: env(safe-area-inset-right, 16px);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 24px;
+  }
+
+  /* Top section: date & greeting */
+  .top-section {
+    text-align: center;
+    opacity: 0.9;
+  }
+  .date-text {
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    opacity: 0.8;
+  }
+  .greeting {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-top: 4px;
+  }
+
+  /* Main card */
+  .main-card {
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 24px;
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 28px 24px;
+    width: 100%;
+    max-width: 340px;
+    text-align: center;
+  }
+
+  .subject-icon {
+    font-size: 3rem;
+    margin-bottom: 8px;
+  }
+
+  .today-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.8;
+    margin-bottom: 4px;
+  }
+
+  .subject-name {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+
+  .subject-hint {
+    font-size: 0.85rem;
+    opacity: 0.8;
+    margin-bottom: 20px;
+    line-height: 1.4;
+  }
+
+  .exam-countdown {
+    background: rgba(255,255,255,0.12);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 20px;
+  }
+  .exam-countdown .countdown-label {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    margin-bottom: 2px;
+  }
+  .exam-countdown .countdown-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+  }
+  .exam-countdown .countdown-value span {
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  /* Streak */
+  .streak-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .streak-fire { font-size: 1.4rem; }
+  .streak-text {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  .streak-sub {
+    font-size: 0.75rem;
+    opacity: 0.7;
+  }
+
+  /* Week dots */
+  .week-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .day-dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    font-weight: 600;
+    border: 2px solid rgba(255,255,255,0.3);
+    opacity: 0.5;
+  }
+  .day-dot.done {
+    background: rgba(255,255,255,0.3);
+    border-color: rgba(255,255,255,0.6);
+    opacity: 1;
+  }
+  .day-dot.today {
+    border-color: #fff;
+    opacity: 1;
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
+  }
+  .day-dot.today.done {
+    background: #fff;
+    color: #333;
+  }
+
+  /* CTA button */
+  .cta-btn {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.95);
+    color: #333;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s, opacity 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .cta-btn:active {
+    transform: scale(0.97);
+    opacity: 0.9;
+  }
+  .cta-btn.done-btn {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    border: 2px solid rgba(255,255,255,0.4);
+    font-size: 0.95rem;
+  }
+
+  /* Quick log modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 100;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal-sheet {
+    background: #1f2937;
+    border-radius: 24px 24px 0 0;
+    padding: 24px 20px;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 20px));
+    width: 100%;
+    max-width: 400px;
+    animation: slideUp 0.3s ease-out;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  .modal-handle {
+    width: 40px;
+    height: 4px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 2px;
+    margin: 0 auto 20px;
+  }
+
+  .modal-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .time-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .time-btn {
+    padding: 14px 8px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-radius: 14px;
+    background: transparent;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .time-btn.selected {
+    background: rgba(255,255,255,0.15);
+    border-color: #fff;
+  }
+  .time-btn:active { transform: scale(0.95); }
+
+  .custom-time {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .custom-time input {
+    flex: 1;
+    padding: 12px;
+    border-radius: 12px;
+    border: 2px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    font-size: 1rem;
+    text-align: center;
+    outline: none;
+  }
+  .custom-time input:focus { border-color: rgba(255,255,255,0.5); }
+  .custom-time label {
+    font-size: 0.85rem;
+    opacity: 0.7;
+    white-space: nowrap;
+  }
+
+  .save-btn {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 16px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .save-btn:active { transform: scale(0.97); }
+
+  /* Stats row at bottom */
+  .bottom-stats {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    opacity: 0.85;
+  }
+  .bottom-stat {
+    text-align: center;
+  }
+  .bottom-stat .val {
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+  .bottom-stat .label {
+    font-size: 0.7rem;
+    opacity: 0.7;
+  }
+
+  /* Link to full dashboard */
+  .dashboard-link {
+    text-align: center;
+    margin-top: 8px;
+  }
+  .dashboard-link a {
+    color: rgba(255,255,255,0.6);
+    font-size: 0.75rem;
+    text-decoration: none;
+  }
+
+  /* Celebration animation */
+  .celebration {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 200;
+  }
+  .confetti {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    animation: confettiFall 1.5s ease-out forwards;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="safe-area" id="app">
+  <!-- Top -->
+  <div class="top-section">
+    <div class="date-text" id="dateText"></div>
+    <div class="greeting" id="greeting"></div>
+  </div>
+
+  <!-- Main card -->
+  <div class="main-card">
+    <div class="subject-icon" id="subjectIcon"></div>
+    <div class="today-label">TODAY'S FOCUS</div>
+    <div class="subject-name" id="subjectName"></div>
+    <div class="subject-hint" id="subjectHint"></div>
+
+    <div class="exam-countdown">
+      <div class="countdown-label" id="countdownLabel"></div>
+      <div class="countdown-value" id="countdownValue"></div>
+    </div>
+
+    <div class="streak-row">
+      <span class="streak-fire" id="streakIcon"></span>
+      <div>
+        <div class="streak-text" id="streakText"></div>
+        <div class="streak-sub" id="streakSub"></div>
+      </div>
+    </div>
+
+    <div class="week-dots" id="weekDots"></div>
+
+    <button class="cta-btn" id="ctaBtn" onclick="handleCTA()"></button>
+  </div>
+
+  <!-- Bottom stats -->
+  <div class="bottom-stats">
+    <div class="bottom-stat">
+      <div class="val" id="totalHours">0h</div>
+      <div class="label">累計学習</div>
+    </div>
+    <div class="bottom-stat">
+      <div class="val" id="totalSessions">0</div>
+      <div class="label">学習回数</div>
+    </div>
+    <div class="bottom-stat">
+      <div class="val" id="completionRate">0%</div>
+      <div class="label">タスク進捗</div>
+    </div>
+  </div>
+
+  <div class="dashboard-link">
+    <a href="index.html">フルダッシュボードを開く →</a>
+  </div>
+</div>
+
+<!-- Quick log modal -->
+<div class="modal-overlay" id="logModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modalTitle">学習を記録</div>
+
+    <div class="time-options" id="timeOptions">
+      <button class="time-btn" onclick="selectTime(15)">15分</button>
+      <button class="time-btn selected" onclick="selectTime(30)">30分</button>
+      <button class="time-btn" onclick="selectTime(60)">60分</button>
+      <button class="time-btn" onclick="selectTime(90)">90分</button>
+      <button class="time-btn" onclick="selectTime(120)">120分</button>
+      <button class="time-btn" onclick="selectCustom()">カスタム</button>
+    </div>
+
+    <div class="custom-time" id="customTime" style="display:none">
+      <input type="number" id="customMinutes" placeholder="分数" min="1" max="480">
+      <label>分</label>
+    </div>
+
+    <button class="save-btn" id="saveBtn" onclick="saveLog()">記録する</button>
+  </div>
+</div>
+
+<div class="celebration" id="celebration"></div>
+
+<script>
+// ===== CONFIG =====
+const STORAGE_KEY = 'selfStudy2026';
+const TRIGGER_KEY = 'morningTrigger';
+
+const SUBJECTS = {
+  takken:  { name: '宅建士', icon: '🏠', color: 'var(--takken)', bg: 'var(--takken-bg)',
+             hint: 'テキストを開いて、前回の続きから', saveBtnColor: '#f59e0b' },
+  ap:      { name: '応用情報', icon: '💻', color: 'var(--ap)', bg: 'var(--ap-bg)',
+             hint: '過去問を1問、解いてみよう', saveBtnColor: '#8b5cf6' },
+  denki:   { name: '電気工事士', icon: '⚡', color: 'var(--denki)', bg: 'var(--denki-bg)',
+             hint: 'テキストを読んで、回路を確認', saveBtnColor: '#10b981' },
+};
+
+// Day-of-week schedule: Mon=1 ... Sun=0
+// 月水: 宅建, 火木: 応用情報, 金: 電気工事士, 土日: 自由選択(宅建メイン)
+const SCHEDULE = {
+  1: 'takken',   // 月
+  2: 'ap',       // 火
+  3: 'takken',   // 水
+  4: 'ap',       // 木
+  5: 'denki',    // 金
+  6: 'takken',   // 土
+  0: 'ap',       // 日
+};
+
+const EXAM_DATES = {
+  takken: { label: '宅建 本試験', date: new Date(2026, 9, 18) },
+  ap:     { label: '応用情報 CBT', date: new Date(2026, 10, 1) },
+  denki:  { label: '電工 技能試験', date: new Date(2026, 11, 12) },
+};
+
+// ===== DATA =====
+function loadData() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  } catch { return {}; }
+}
+function saveData(data) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch {}
+}
+function loadTriggerData() {
+  try {
+    return JSON.parse(localStorage.getItem(TRIGGER_KEY) || '{}');
+  } catch { return {}; }
+}
+function saveTriggerData(d) {
+  try { localStorage.setItem(TRIGGER_KEY, JSON.stringify(d)); } catch {}
+}
+
+// ===== HELPERS =====
+const TODAY = new Date();
+const TODAY_STR = TODAY.toISOString().split('T')[0];
+const DOW = TODAY.getDay();
+const DAY_NAMES = ['日','月','火','水','木','金','土'];
+
+function daysBetween(a, b) {
+  return Math.ceil((b - a) / (1000*60*60*24));
+}
+
+function getStreak() {
+  const data = loadData();
+  const logs = data.logs || [];
+  if (!logs.length) return 0;
+
+  const logDates = [...new Set(logs.map(l => l.date))].sort().reverse();
+  let streak = 0;
+  let checkDate = new Date(TODAY);
+
+  // If no log today, start checking from yesterday
+  if (!logDates.includes(TODAY_STR)) {
+    checkDate.setDate(checkDate.getDate() - 1);
+  }
+
+  for (let i = 0; i < 365; i++) {
+    const ds = checkDate.toISOString().split('T')[0];
+    if (logDates.includes(ds)) {
+      streak++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
+function hasStudiedToday() {
+  const data = loadData();
+  const logs = data.logs || [];
+  return logs.some(l => l.date === TODAY_STR);
+}
+
+function getWeekStatus() {
+  const data = loadData();
+  const logs = data.logs || [];
+  const logDates = new Set(logs.map(l => l.date));
+
+  const monday = new Date(TODAY);
+  const dayOffset = (DOW === 0 ? 6 : DOW - 1);
+  monday.setDate(monday.getDate() - dayOffset);
+
+  const week = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(d.getDate() + i);
+    const ds = d.toISOString().split('T')[0];
+    week.push({
+      label: DAY_NAMES[d.getDay()],
+      date: ds,
+      done: logDates.has(ds),
+      isToday: ds === TODAY_STR,
+    });
+  }
+  return week;
+}
+
+// ===== GREETING =====
+function getGreeting() {
+  const h = TODAY.getHours();
+  if (h < 5) return 'まだ夜中です。無理せず';
+  if (h < 10) return 'おはようございます';
+  if (h < 17) return 'こんにちは';
+  return 'おつかれさまです';
+}
+
+// ===== RENDER =====
+let selectedMinutes = 30;
+let currentSubject = SCHEDULE[DOW] || 'takken';
+
+function render() {
+  const subj = SUBJECTS[currentSubject];
+  const studied = hasStudiedToday();
+  const streak = getStreak();
+  const week = getWeekStatus();
+  const data = loadData();
+  const logs = data.logs || [];
+  const checked = data.checked || {};
+
+  // Background
+  document.body.style.background = subj.bg.replace('var(--takken-bg)', 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)')
+    .replace('var(--ap-bg)', 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)')
+    .replace('var(--denki-bg)', 'linear-gradient(135deg, #10b981 0%, #059669 100%)');
+
+  // Set actual background based on subject
+  const bgMap = {
+    takken: 'linear-gradient(135deg, #92400e 0%, #b45309 30%, #d97706 100%)',
+    ap: 'linear-gradient(135deg, #4c1d95 0%, #6d28d9 30%, #8b5cf6 100%)',
+    denki: 'linear-gradient(135deg, #064e3b 0%, #047857 30%, #10b981 100%)',
+  };
+  document.body.style.background = bgMap[currentSubject] || bgMap.takken;
+
+  // Date
+  const months = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  document.getElementById('dateText').textContent =
+    `${months[TODAY.getMonth()]}${TODAY.getDate()}日（${DAY_NAMES[DOW]}）`;
+  document.getElementById('greeting').textContent = getGreeting();
+
+  // Subject
+  document.getElementById('subjectIcon').textContent = subj.icon;
+  document.getElementById('subjectName').textContent = subj.name;
+  document.getElementById('subjectHint').textContent = subj.hint;
+
+  // Exam countdown
+  const exam = EXAM_DATES[currentSubject];
+  const daysLeft = daysBetween(TODAY, exam.date);
+  document.getElementById('countdownLabel').textContent = exam.label + 'まで';
+  document.getElementById('countdownValue').innerHTML =
+    `${daysLeft}<span>日</span>`;
+
+  // Streak
+  if (streak > 0) {
+    document.getElementById('streakIcon').textContent = streak >= 7 ? '🔥' : '✨';
+    document.getElementById('streakText').textContent = `${streak}日連続`;
+    document.getElementById('streakSub').textContent =
+      studied ? '今日も記録済み！' : 'この記録を続けよう';
+  } else {
+    document.getElementById('streakIcon').textContent = '🌱';
+    document.getElementById('streakText').textContent = '今日から始めよう';
+    document.getElementById('streakSub').textContent = '最初の一歩を踏み出そう';
+  }
+
+  // Week dots
+  const dotsHtml = week.map(d => {
+    let cls = 'day-dot';
+    if (d.done) cls += ' done';
+    if (d.isToday) cls += ' today';
+    return `<div class="${cls}">${d.label}</div>`;
+  }).join('');
+  document.getElementById('weekDots').innerHTML = dotsHtml;
+
+  // CTA
+  const btn = document.getElementById('ctaBtn');
+  if (studied) {
+    btn.textContent = '✅ 記録済み（追加記録する）';
+    btn.className = 'cta-btn done-btn';
+  } else {
+    btn.textContent = '📖 学習を始める';
+    btn.className = 'cta-btn';
+  }
+
+  // Bottom stats
+  const totalMinutes = logs.reduce((s, l) => s + (l.minutes || 0), 0);
+  const totalH = Math.floor(totalMinutes / 60);
+  const totalM = totalMinutes % 60;
+  document.getElementById('totalHours').textContent =
+    totalH > 0 ? `${totalH}h${totalM ? totalM + 'm' : ''}` : `${totalM}m`;
+  document.getElementById('totalSessions').textContent = logs.length;
+
+  const totalCheckItems = 30; // approximate from main dashboard
+  const checkedCount = Object.values(checked).filter(Boolean).length;
+  document.getElementById('completionRate').textContent =
+    Math.round(checkedCount / totalCheckItems * 100) + '%';
+
+  // Modal
+  document.getElementById('modalTitle').textContent = `${subj.icon} ${subj.name} を記録`;
+  document.getElementById('saveBtn').style.background = subj.saveBtnColor;
+  document.getElementById('saveBtn').style.color = '#fff';
+}
+
+// ===== INTERACTIONS =====
+function handleCTA() {
+  document.getElementById('logModal').classList.add('open');
+}
+
+function selectTime(min) {
+  selectedMinutes = min;
+  document.getElementById('customTime').style.display = 'none';
+  document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
+  event.target.classList.add('selected');
+}
+
+function selectCustom() {
+  document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
+  event.target.classList.add('selected');
+  document.getElementById('customTime').style.display = 'flex';
+  document.getElementById('customMinutes').focus();
+  selectedMinutes = 0;
+}
+
+function saveLog() {
+  let minutes = selectedMinutes;
+  if (!minutes) {
+    minutes = parseInt(document.getElementById('customMinutes').value) || 0;
+  }
+  if (!minutes) return;
+
+  // Save to shared localStorage (same format as main dashboard)
+  const data = loadData();
+  if (!data.logs) data.logs = [];
+  data.logs.push({
+    date: TODAY_STR,
+    subject: currentSubject,
+    minutes: minutes,
+    memo: '朝の着手',
+    id: Date.now()
+  });
+  saveData(data);
+
+  // Close modal & refresh
+  document.getElementById('logModal').classList.remove('open');
+  showCelebration();
+  render();
+}
+
+// Close modal on overlay tap
+document.getElementById('logModal').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('open');
+});
+
+// ===== CELEBRATION =====
+function showCelebration() {
+  const container = document.getElementById('celebration');
+  const colors = ['#fff', '#fbbf24', '#a78bfa', '#34d399', '#f87171', '#60a5fa'];
+
+  for (let i = 0; i < 30; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.left = Math.random() * 100 + '%';
+    c.style.animationDelay = Math.random() * 0.5 + 's';
+    c.style.animationDuration = (1 + Math.random()) + 's';
+    container.appendChild(c);
+  }
+
+  setTimeout(() => { container.innerHTML = ''; }, 2500);
+}
+
+// ===== INIT =====
+render();
+</script>
+</body>
+</html>

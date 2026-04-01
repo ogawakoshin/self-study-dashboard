@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="今日のタスク">
+<title>今日のタスク</title>
+<style>
+  :root {
+    --takken: #f59e0b;
+    --ap: #8b5cf6;
+    --denki: #10b981;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Kaku Gothic ProN', sans-serif;
+    min-height: 100vh;
+    min-height: 100dvh;
+    color: #fff;
+    transition: background 0.3s;
+  }
+
+  .safe-area {
+    padding: env(safe-area-inset-top, 16px) env(safe-area-inset-right, 16px) env(safe-area-inset-bottom, 16px) env(safe-area-inset-left, 16px);
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 4px;
+  }
+  .date-text {
+    font-size: 0.85rem;
+    opacity: 0.8;
+  }
+  .streak-badge {
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  /* Subject card */
+  .subject-card {
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .subject-icon {
+    font-size: 2rem;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.15);
+    border-radius: 12px;
+  }
+  .subject-info { flex: 1; }
+  .subject-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+  .exam-countdown {
+    font-size: 0.8rem;
+    opacity: 0.75;
+    margin-top: 2px;
+  }
+  .studied-badge {
+    font-size: 0.75rem;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+  .studied-badge.done {
+    background: rgba(16,185,129,0.3);
+    color: #6ee7b7;
+  }
+  .studied-badge.not-done {
+    background: rgba(239,68,68,0.25);
+    color: #fca5a5;
+  }
+
+  /* Task card */
+  .task-card {
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 16px;
+    padding: 16px;
+    flex: 1;
+  }
+  .task-card h2 {
+    font-size: 0.85rem;
+    opacity: 0.7;
+    font-weight: 500;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+  }
+  .task-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .task-item:last-child { border-bottom: none; }
+  .task-badge {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-weight: 600;
+    white-space: nowrap;
+    min-width: 36px;
+    text-align: center;
+    margin-top: 2px;
+  }
+  .task-badge.takken { background: rgba(245,158,11,0.3); color: #fcd34d; }
+  .task-badge.ap { background: rgba(139,92,246,0.3); color: #c4b5fd; }
+  .task-badge.denki { background: rgba(16,185,129,0.3); color: #6ee7b7; }
+  .task-content {
+    flex: 1;
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+  .task-time {
+    font-size: 0.75rem;
+    opacity: 0.6;
+    white-space: nowrap;
+    margin-top: 2px;
+  }
+
+  /* Stats row */
+  .stats-row {
+    display: flex;
+    gap: 8px;
+  }
+  .stat-card {
+    flex: 1;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .stat-value {
+    font-size: 1.3rem;
+    font-weight: 700;
+  }
+  .stat-label {
+    font-size: 0.65rem;
+    opacity: 0.6;
+    margin-top: 2px;
+  }
+
+  /* Week dots */
+  .week-row {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 0;
+  }
+  .week-dot-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+  .week-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    font-weight: 600;
+    border: 2px solid rgba(255,255,255,0.2);
+    transition: all 0.3s;
+  }
+  .week-dot.done {
+    background: rgba(16,185,129,0.5);
+    border-color: #10b981;
+  }
+  .week-dot.today {
+    border-color: #fff;
+    box-shadow: 0 0 8px rgba(255,255,255,0.4);
+  }
+  .week-day-label {
+    font-size: 0.55rem;
+    opacity: 0.5;
+  }
+
+  /* Links */
+  .links {
+    display: flex;
+    gap: 8px;
+    padding: 4px 0 8px;
+  }
+  .link-btn {
+    flex: 1;
+    display: block;
+    text-align: center;
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    font-size: 0.75rem;
+    padding: 10px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 10px;
+    transition: background 0.2s;
+  }
+  .link-btn:active {
+    background: rgba(255,255,255,0.2);
+  }
+</style>
+</head>
+<body>
+<div class="safe-area">
+  <div class="header">
+    <div class="date-text" id="dateText"></div>
+    <div class="streak-badge" id="streakBadge"></div>
+  </div>
+
+  <div class="subject-card">
+    <div class="subject-icon" id="subjectIcon"></div>
+    <div class="subject-info">
+      <div class="subject-name" id="subjectName"></div>
+      <div class="exam-countdown" id="examCountdown"></div>
+    </div>
+    <div class="studied-badge" id="studiedBadge"></div>
+  </div>
+
+  <div class="week-row" id="weekRow"></div>
+
+  <div class="task-card">
+    <h2>TODAY'S TASKS</h2>
+    <div id="taskList"></div>
+  </div>
+
+  <div class="stats-row" id="statsRow"></div>
+
+  <div class="links">
+    <a href="morning.html" class="link-btn">朝トリガー</a>
+    <a href="index.html" class="link-btn">フルダッシュボード</a>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'selfStudy2026';
+
+const SUBJECTS = {
+  takken: { name: '宅建士', icon: '🏠', badgeLabel: '宅建' },
+  ap:     { name: '応用情報', icon: '💻', badgeLabel: 'AP' },
+  denki:  { name: '電気工事士', icon: '⚡', badgeLabel: '電工' },
+};
+
+const SCHEDULE = { 1:'takken', 2:'ap', 3:'takken', 4:'ap', 5:'denki', 6:'takken', 0:'ap' };
+
+const EXAM_DATES = {
+  takken: { label: '宅建本試験', date: new Date(2026, 9, 18) },
+  ap:     { label: '応用情報CBT', date: new Date(2026, 10, 1) },
+  denki:  { label: '電工技能試験', date: new Date(2026, 11, 12) },
+};
+
+const BG_MAP = {
+  takken: 'linear-gradient(135deg, #92400e 0%, #b45309 30%, #d97706 100%)',
+  ap:     'linear-gradient(135deg, #4c1d95 0%, #6d28d9 30%, #8b5cf6 100%)',
+  denki:  'linear-gradient(135deg, #064e3b 0%, #047857 30%, #10b981 100%)',
+};
+
+// ===== DATA =====
+function loadData() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+  catch { return {}; }
+}
+
+const TODAY = new Date();
+const TODAY_STR = TODAY.toISOString().split('T')[0];
+const DOW = TODAY.getDay();
+const DAY_NAMES = ['日','月','火','水','木','金','土'];
+
+function daysBetween(a, b) {
+  return Math.ceil((b - a) / (1000*60*60*24));
+}
+
+// ===== STREAK =====
+function getStreak() {
+  const logs = (loadData().logs || []);
+  if (!logs.length) return 0;
+  const logDates = [...new Set(logs.map(l => l.date))].sort().reverse();
+  let streak = 0;
+  let d = new Date(TODAY);
+  if (!logDates.includes(TODAY_STR)) d.setDate(d.getDate() - 1);
+  for (let i = 0; i < 365; i++) {
+    if (logDates.includes(d.toISOString().split('T')[0])) {
+      streak++;
+      d.setDate(d.getDate() - 1);
+    } else break;
+  }
+  return streak;
+}
+
+// ===== WEEK STATUS =====
+function getWeekStatus() {
+  const logDates = new Set((loadData().logs || []).map(l => l.date));
+  const mon = new Date(TODAY);
+  mon.setDate(mon.getDate() - (DOW === 0 ? 6 : DOW - 1));
+  const week = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(mon);
+    d.setDate(d.getDate() + i);
+    const ds = d.toISOString().split('T')[0];
+    week.push({ label: DAY_NAMES[d.getDay()], done: logDates.has(ds), isToday: ds === TODAY_STR });
+  }
+  return week;
+}
+
+// ===== WEEKLY PLAN (ported from index.html) =====
+function getTodayTasks() {
+  let currentPhase = 'takken';
+  if (TODAY >= new Date(2026, 10, 15)) currentPhase = 'denki';
+  else if (TODAY >= new Date(2026, 9, 19)) currentPhase = 'ap';
+
+  const dayLabel = DAY_NAMES[DOW];
+
+  const weekPlans = {
+    takken: (() => {
+      const weekNum = Math.ceil(daysBetween(new Date(2026, 2, 26), TODAY) / 7);
+      if (weekNum <= 2) return [
+        { day:'月', subj:'takken', subjName:'宅建士', content:'📺 ゆーき大学 宅建業法 動画2本視聴', time:'40min' },
+        { day:'火', subj:'takken', subjName:'宅建士', content:'📺 ゆーき大学 宅建業法 動画2本視聴', time:'40min' },
+        { day:'水', subj:'ap', subjName:'応用情報', content:'午前問題（テクノロジ系）', time:'1h' },
+        { day:'木', subj:'takken', subjName:'宅建士', content:'📺 ゆーき大学 宅建業法 動画2本視聴', time:'40min' },
+        { day:'金', subj:'takken', subjName:'宅建士', content:'📺 ゆーき大学 宅建業法 動画2本視聴', time:'40min' },
+        { day:'土', subj:'takken', subjName:'宅建士', content:'📺 ゆーき大学 動画の復習・メモ整理', time:'1h' },
+        { day:'日', subj:'ap', subjName:'応用情報', content:'午前問題演習', time:'1h' },
+      ];
+      if (weekNum <= 4) return [
+        { day:'月', subj:'takken', subjName:'宅建士', content:'📺 ゆーき大学 法令上の制限 動画2本', time:'40min' },
+        { day:'火', subj:'takken', subjName:'宅建士', content:'📺 ゆーき大学 法令上の制限 動画2本', time:'40min' },
+        { day:'水', subj:'ap', subjName:'応用情報', content:'午前問題（テクノロジ系）', time:'1h' },
+        { day:'木', subj:'takken', subjName:'宅建士', content:'📺 ゆーき大学 税その他の動画', time:'40min' },
+        { day:'金', subj:'takken', subjName:'宅建士', content:'📺 法令制限・税 残りの動画', time:'40min' },
+        { day:'土', subj:'takken', subjName:'宅建士', content:'📺 動画復習 + メモ整理', time:'1h' },
+        { day:'日', subj:'ap', subjName:'応用情報', content:'午前問題演習', time:'1h' },
+      ];
+      if (weekNum <= 6) return [
+        { day:'月', subj:'takken', subjName:'宅建士', content:'📺 ゆーき大学 民法 動画2本', time:'50min' },
+        { day:'火', subj:'takken', subjName:'宅建士', content:'📺 ゆーき大学 民法 動画2本', time:'50min' },
+        { day:'水', subj:'ap', subjName:'応用情報', content:'午前問題（テクノロジ系）', time:'1h' },
+        { day:'木', subj:'takken', subjName:'宅建士', content:'📺 ゆーき大学 民法 動画1-2本', time:'40min' },
+        { day:'金', subj:'takken', subjName:'宅建士', content:'📺 民法 残り + トリセツ問題集購入', time:'1h' },
+        { day:'土', subj:'takken', subjName:'宅建士', content:'📺 1周目完了！ 全体の復習・ノート整理', time:'1.5h' },
+        { day:'日', subj:'ap', subjName:'応用情報', content:'午前問題演習', time:'1h' },
+      ];
+      if (weekNum <= 8) return [
+        { day:'月', subj:'takken', subjName:'宅建士', content:'📺 2周目:宅建業法(1.5倍速) + 📖 問題集音読', time:'1h' },
+        { day:'火', subj:'takken', subjName:'宅建士', content:'📖 トリセツ問題集「宅建業法」音読', time:'1h' },
+        { day:'水', subj:'ap', subjName:'応用情報', content:'午前問題（テクノロジ系）', time:'1h' },
+        { day:'木', subj:'takken', subjName:'宅建士', content:'📺 2周目:法令制限(1.5倍速) + 📖 問題集', time:'1h' },
+        { day:'金', subj:'takken', subjName:'宅建士', content:'📖 トリセツ問題集「法令制限」音読', time:'1.5h' },
+        { day:'土', subj:'takken', subjName:'宅建士', content:'📺 2周目:税+民法(1.5倍速) + 📖 問題集', time:'1.5h' },
+        { day:'日', subj:'ap', subjName:'応用情報', content:'午前問題演習', time:'1h' },
+      ];
+      if (weekNum <= 14) return [
+        { day:'月', subj:'takken', subjName:'宅建士', content:'📖 トリセツ問題集 音読（宅建業法セクション）', time:'1h' },
+        { day:'火', subj:'takken', subjName:'宅建士', content:'📖 トリセツ問題集 音読（法令制限セクション）', time:'1h' },
+        { day:'水', subj:'ap', subjName:'応用情報', content:'午前問題（マネジメント系）', time:'1h' },
+        { day:'木', subj:'takken', subjName:'宅建士', content:'📖 問題集 音読（税その他→権利関係）', time:'1h' },
+        { day:'金', subj:'takken', subjName:'宅建士', content:'📺 棚田行政書士 借地借家法等 + 復習', time:'1.5h' },
+        { day:'土', subj:'takken', subjName:'宅建士', content:'📖 問題集2周目 + 弱点分野の動画視聴', time:'1.5h' },
+        { day:'日', subj:'ap', subjName:'応用情報', content:'午前・午後問題演習', time:'1h' },
+      ];
+      return [
+        { day:'月', subj:'takken', subjName:'宅建士', content:'朝: 権利関係(頭フレッシュな時に暗記)', time:'1.5h' },
+        { day:'火', subj:'takken', subjName:'宅建士', content:'昼: 法令制限・税 / 夜: 宅建業法 暗記', time:'1.5h' },
+        { day:'水', subj:'ap', subjName:'応用情報', content:'午後問題演習', time:'1h' },
+        { day:'木', subj:'takken', subjName:'宅建士', content:'全科目並行: 問題集3周目 + 暗記ノート', time:'1.5h' },
+        { day:'金', subj:'takken', subjName:'宅建士', content:'過去問演習 + 弱点分野の集中復習', time:'1.5h' },
+        { day:'土', subj:'takken', subjName:'宅建士', content:'📺 ゆーき大学/棚田 動画で復習 + 暗記', time:'2h' },
+        { day:'日', subj:'ap', subjName:'応用情報', content:'午前・午後問題演習', time:'1h' },
+      ];
+    })(),
+    ap: [
+      { day:'月', subj:'ap', subjName:'応用情報', content:'午前問題演習', time:'2h' },
+      { day:'火', subj:'ap', subjName:'応用情報', content:'午後問題（選択分野1）', time:'2h' },
+      { day:'水', subj:'denki', subjName:'電気工事士', content:'筆記対策・過去問', time:'1h' },
+      { day:'木', subj:'ap', subjName:'応用情報', content:'午後問題（選択分野2）', time:'2h' },
+      { day:'金', subj:'ap', subjName:'応用情報', content:'午前問題の復習', time:'1.5h' },
+      { day:'土', subj:'ap', subjName:'応用情報', content:'模試・弱点分析', time:'2h' },
+      { day:'日', subj:'denki', subjName:'電気工事士', content:'筆記CBT対策', time:'1h' },
+    ],
+    denki: [
+      { day:'月', subj:'denki', subjName:'電気工事士', content:'候補問題の練習（問題1-3）', time:'2h' },
+      { day:'火', subj:'denki', subjName:'電気工事士', content:'候補問題の練習（問題4-6）', time:'2h' },
+      { day:'水', subj:'denki', subjName:'電気工事士', content:'複線図の描き方・確認', time:'1.5h' },
+      { day:'木', subj:'denki', subjName:'電気工事士', content:'候補問題の練習（問題7-9）', time:'2h' },
+      { day:'金', subj:'denki', subjName:'電気工事士', content:'候補問題の練習（問題10-13）', time:'2h' },
+      { day:'土', subj:'denki', subjName:'電気工事士', content:'タイムトライアル・弱点復習', time:'2h' },
+      { day:'日', subj:'denki', subjName:'電気工事士', content:'全体通し練習・工具確認', time:'1.5h' },
+    ],
+  };
+
+  const plan = weekPlans[currentPhase] || [];
+  return plan.filter(t => t.day === dayLabel);
+}
+
+// ===== RENDER =====
+function render() {
+  const currentSubject = SCHEDULE[DOW] || 'takken';
+  const subj = SUBJECTS[currentSubject];
+  const data = loadData();
+  const logs = data.logs || [];
+  const studied = logs.some(l => l.date === TODAY_STR);
+  const streak = getStreak();
+  const totalHours = Math.round((logs.reduce((s,l) => s + (l.minutes||0), 0) / 60) * 10) / 10;
+  const totalSessions = logs.length;
+
+  // Background
+  document.body.style.background = BG_MAP[currentSubject];
+
+  // Date
+  const months = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  document.getElementById('dateText').textContent =
+    `${months[TODAY.getMonth()]}${TODAY.getDate()}日（${DAY_NAMES[DOW]}）`;
+
+  // Streak
+  document.getElementById('streakBadge').textContent = streak > 0 ? `🔥 ${streak}日連続` : '🔥 0日';
+
+  // Subject card
+  document.getElementById('subjectIcon').textContent = subj.icon;
+  document.getElementById('subjectName').textContent = subj.name;
+  const exam = EXAM_DATES[currentSubject];
+  const daysLeft = daysBetween(TODAY, exam.date);
+  document.getElementById('examCountdown').textContent =
+    daysLeft > 0 ? `${exam.label}まで ${daysLeft}日` : `${exam.label} 終了`;
+
+  const badge = document.getElementById('studiedBadge');
+  if (studied) {
+    badge.textContent = '✅ 済';
+    badge.className = 'studied-badge done';
+  } else {
+    badge.textContent = '未着手';
+    badge.className = 'studied-badge not-done';
+  }
+
+  // Week dots
+  const week = getWeekStatus();
+  document.getElementById('weekRow').innerHTML = week.map(w => `
+    <div class="week-dot-wrap">
+      <div class="week-dot ${w.done ? 'done' : ''} ${w.isToday ? 'today' : ''}">
+        ${w.done ? '✓' : ''}
+      </div>
+      <span class="week-day-label">${w.label}</span>
+    </div>
+  `).join('');
+
+  // Tasks
+  const tasks = getTodayTasks();
+  const taskList = document.getElementById('taskList');
+  if (tasks.length === 0) {
+    taskList.innerHTML = '<div style="text-align:center;opacity:0.5;padding:20px;font-size:0.9rem">タスクデータがありません</div>';
+  } else {
+    taskList.innerHTML = tasks.map(t => {
+      const badgeClass = t.subj;
+      const badgeLabel = SUBJECTS[t.subj]?.badgeLabel || t.subjName;
+      return `
+        <div class="task-item">
+          <span class="task-badge ${badgeClass}">${badgeLabel}</span>
+          <span class="task-content">${t.content}</span>
+          <span class="task-time">${t.time}</span>
+        </div>`;
+    }).join('');
+  }
+
+  // Stats
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-value">${totalHours}h</div>
+      <div class="stat-label">累計学習</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">${totalSessions}</div>
+      <div class="stat-label">セッション</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">${(() => {
+        const nearest = Object.values(EXAM_DATES).reduce((min, e) => {
+          const d = daysBetween(TODAY, e.date);
+          return d > 0 && d < min.d ? { d, label: e.label } : min;
+        }, { d: 999, label: '' });
+        return nearest.d + '日';
+      })()}</div>
+      <div class="stat-label">次の試験</div>
+    </div>
+  `;
+}
+
+render();
+</script>
+</body>
+</html>

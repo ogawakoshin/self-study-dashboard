@@ -137,12 +137,14 @@ function getTodayTasks() {
 async function buildWidget() {
   var today = new Date();
   var dow = today.getDay();
-  var currentSubject = SCHEDULE[dow] || 'takken';
-  var subj = SUBJECTS[currentSubject];
-  var exam = EXAM_DATES[currentSubject];
-  var daysLeft = daysBetween(today, exam.date);
   var tasks = getTodayTasks();
   var months = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+
+  // Derive subject from today's actual tasks
+  var taskSubject = (tasks.length > 0) ? tasks[0].subj : 'takken';
+  var subj = SUBJECTS[taskSubject];
+  var exam = EXAM_DATES[taskSubject];
+  var daysLeft = daysBetween(today, exam.date);
 
   var w = new ListWidget();
   w.url = WIDGET_URL;
@@ -170,21 +172,6 @@ async function buildWidget() {
   var countdownText = header.addText(countdownLabel);
   countdownText.font = Font.boldSystemFont(11);
   countdownText.textColor = new Color('#ffffff', 0.8);
-
-  w.addSpacer(8);
-
-  // Subject row
-  var subjRow = w.addStack();
-  subjRow.layoutHorizontally();
-  subjRow.centerAlignContent();
-  subjRow.spacing = 8;
-
-  var iconText = subjRow.addText(subj.icon);
-  iconText.font = Font.systemFont(24);
-
-  var nameText = subjRow.addText(subj.name);
-  nameText.font = Font.boldSystemFont(20);
-  nameText.textColor = Color.white();
 
   w.addSpacer(10);
 
